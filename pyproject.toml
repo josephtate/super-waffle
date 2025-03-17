@@ -1,0 +1,27 @@
+[project]
+name = "rlc-cloud-repos"
+version = "0.1.0"
+readme = "README.md"
+requires-python = ">=3.13"
+description = "A universal cloud-init querying and repository configuration tool for Rocky Linux CIQ Derivatives"
+authors = [
+    { name = "Joel Hanger", email = "jhanger@ciq.com" }
+]
+dependencies = [
+    "flake8",              # linting
+    "flake8-pyproject",    # enables reading flake8 config from pyproject.toml
+    "black",               # code formatter
+    "isort",               # import sorter
+]
+
+[tool.black]
+line-length = 88
+target-version = ["py38"]
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = ["E203", "W503"]
