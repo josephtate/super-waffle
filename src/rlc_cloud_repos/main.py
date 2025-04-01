@@ -1,7 +1,7 @@
 import argparse
 import sys
 import os
-from rlc_cloud_repos.cloud_metadata import get_cloud_info, CloudMetadata
+from rlc_cloud_repos.cloud_metadata import get_cloud_metadata, CloudMetadata
 from rlc_cloud_repos.repo_config import (
     load_mirror_map,
     select_mirror,
@@ -26,7 +26,7 @@ def main():
     args = parser.parse_args()
 
     # Detect metadata
-    metadata = get_cloud_info()
+    metadata = get_cloud_metadata()
     if args.cloud:
         metadata.provider = args.cloud
     if args.region:
