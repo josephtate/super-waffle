@@ -5,19 +5,31 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "rlc-cloud-repos"
 version = "0.1.0"
-description = "A universal cloud-init querying and repository configuration tool for Rocky Linux CIQ Derivatives"
 readme = "README.md"
-requires-python = ">=3.8"
-authors = [{ name = "Joel Hanger", email = "jhanger@ciq.com" }]
-dependencies = ["PyYAML", "ruamel.yaml"]
+requires-python = ">=3.9"
+description = "A universal cloud-init querying and repository configuration tool for Rocky Linux CIQ Derivatives"
+authors = [
+  { name = "Joel Hanger", email = "jhanger@ciq.com" }
+]
+dependencies = [
+  "flake8",
+  "flake8-pyproject",
+  "black",
+  "isort",
+  "PyYAML",
+  "ruamel.yaml"
+]
 
 [tool.setuptools]
 package-dir = {"" = "src"}
 include-package-data = true
 
 [tool.setuptools.packages.find]
+include = ["rlc_cloud_repos"]
 where = ["src"]
-include = ["rlc_cloud_repos", "rlc_cloud_repos.*"]
+
+[tool.setuptools.package-data]
+"rlc_cloud_repos" = ["data/mirrors.yaml"]
 
 [tool.black]
 line-length = 88

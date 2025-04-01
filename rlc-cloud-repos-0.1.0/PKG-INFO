@@ -1,3 +1,20 @@
+Metadata-Version: 2.4
+Name: rlc-cloud-repos
+Version: 0.1.0
+Summary: A universal cloud-init querying and repository configuration tool for Rocky Linux CIQ Derivatives
+Author: Joel Hanger
+Author-email: Joel Hanger <jhanger@ciq.com>
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: flake8
+Requires-Dist: flake8-pyproject
+Requires-Dist: black
+Requires-Dist: isort
+Requires-Dist: PyYAML
+Requires-Dist: ruamel.yaml
+Dynamic: license-file
+
 # RLC Cloud Repos - Cloud-Agnostic Repository Auto-Configuration
 
 ## Overview

@@ -1,0 +1,647 @@
+Directory structure:
+└── .//
+    ├── test_cloud_repos.py
+    ├── Makefile
+    ├── tests/
+    ├── pyproject.toml
+    ├── LICENSE
+    ├── uv.lock
+    ├── README.md
+    ├── .python-version
+    ├── src/
+    │   └── rlc_cloud_repos/
+    │       ├── __init__.py
+    │       ├── repo_config.py
+    │       └── cloud_metadata.py
+    └── setup.cfg
+
+================================================
+File: /test_cloud_repos.py
+================================================
+#!/usr/bin/env python3
+import os
+import sys
+import logging
+
+from rlc_cloud_repos import get_cloud_metadata, select_mirror, build_repo_config
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+def main():
+    # Check for the lock file (simulate first boot logic)
+    disable_file = "/etc/ciq-repo-disable"
+    if os.path.exists(disable_file):
+        logger.info("Repo configuration is disabled (lock file found). Exiting.")
+        sys.exit(0)
+    
+    # Retrieve cloud metadata
+    try:
+        metadata = get_cloud_metadata()
+        logger.info(f"Detected Cloud Metadata: {metadata}")
+    except Exception as e:
+        logger.error("Failed to retrieve cloud metadata: %s", e)
+        sys.exit(1)
+    
+    # Select mirror URL based on metadata
+    mirror_url = select_mirror(metadata)
+    logger.info(f"Selected mirror URL: {mirror_url}")
+    
+    # Build repo configuration
+    repo_config = build_repo_config(metadata, mirror_url)
+    
+    # For testing: write the configuration to /tmp/test.repo (simulate /etc/yum.repos.d/)
+    test_repo_path = "/tmp/test.repo"
+    with open(test_repo_path, "w") as f:
+        repo_config.write(f)
+    logger.info(f"Repository configuration written to {test_repo_path}")
+
+if __name__ == "__main__":
+    main()
+
+
+================================================
+File: /Makefile
+================================================
+.PHONY: install clean
+
+install:
+	@echo "Installing rlc-cloud-repos in editable mode..."
+	pip install -e .
+
+clean:
+	@echo "Cleaning build artifacts..."
+	rm -rf build dist *.egg-info
+
+
+================================================
+File: /pyproject.toml
+================================================
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rlc-cloud-repos"
+version = "0.1.0"
+readme = "README.md"
+requires-python = ">=3.13"
+description = "A universal cloud-init querying and repository configuration tool for Rocky Linux CIQ Derivatives"
+authors = [
+    { name = "Joel Hanger", email = "jhanger@ciq.com" }
+]
+dependencies = [
+    "flake8",              # linting
+    "flake8-pyproject",    # enables reading flake8 config from pyproject.toml
+    "black",               # code formatter
+    "isort",               # import sorter
+    "PyYAML",              # YAML support for mirror mapping
+    "ruamel.yaml",         # Optional, advanced YAML processing
+]
+
+[tool.black]
+line-length = 88
+target-version = ["py38"]
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = ["E203", "W503"]
+
+
+================================================
+File: /LICENSE
+================================================
+MIT License
+
+Copyright (c) 2025 Ctrl IQ, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+================================================
+File: /uv.lock
+================================================
+version = 1
+requires-python = ">=3.13"
+
+[[package]]
+name = "black"
+version = "25.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "click" },
+    { name = "mypy-extensions" },
+    { name = "packaging" },
+    { name = "pathspec" },
+    { name = "platformdirs" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/94/49/26a7b0f3f35da4b5a65f081943b7bcd22d7002f5f0fb8098ec1ff21cb6ef/black-25.1.0.tar.gz", hash = "sha256:33496d5cd1222ad73391352b4ae8da15253c5de89b93a80b3e2c8d9a19ec2666", size = 649449 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/98/87/0edf98916640efa5d0696e1abb0a8357b52e69e82322628f25bf14d263d1/black-25.1.0-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:8f0b18a02996a836cc9c9c78e5babec10930862827b1b724ddfe98ccf2f2fe4f", size = 1650673 },
+    { url = "https://files.pythonhosted.org/packages/52/e5/f7bf17207cf87fa6e9b676576749c6b6ed0d70f179a3d812c997870291c3/black-25.1.0-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:afebb7098bfbc70037a053b91ae8437c3857482d3a690fefc03e9ff7aa9a5fd3", size = 1453190 },
+    { url = "https://files.pythonhosted.org/packages/e3/ee/adda3d46d4a9120772fae6de454c8495603c37c4c3b9c60f25b1ab6401fe/black-25.1.0-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:030b9759066a4ee5e5aca28c3c77f9c64789cdd4de8ac1df642c40b708be6171", size = 1782926 },
+    { url = "https://files.pythonhosted.org/packages/cc/64/94eb5f45dcb997d2082f097a3944cfc7fe87e071907f677e80788a2d7b7a/black-25.1.0-cp313-cp313-win_amd64.whl", hash = "sha256:a22f402b410566e2d1c950708c77ebf5ebd5d0d88a6a2e87c86d9fb48afa0d18", size = 1442613 },
+    { url = "https://files.pythonhosted.org/packages/09/71/54e999902aed72baf26bca0d50781b01838251a462612966e9fc4891eadd/black-25.1.0-py3-none-any.whl", hash = "sha256:95e8176dae143ba9097f351d174fdaf0ccd29efb414b362ae3fd72bf0f710717", size = 207646 },
+]
+
+[[package]]
+name = "click"
+version = "8.1.8"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "colorama", marker = "sys_platform == 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/b9/2e/0090cbf739cee7d23781ad4b89a9894a41538e4fcf4c31dcdd705b78eb8b/click-8.1.8.tar.gz", hash = "sha256:ed53c9d8990d83c2a27deae68e4ee337473f6330c040a31d4225c9574d16096a", size = 226593 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7e/d4/7ebdbd03970677812aac39c869717059dbb71a4cfc033ca6e5221787892c/click-8.1.8-py3-none-any.whl", hash = "sha256:63c132bbbed01578a06712a2d1f497bb62d9c1c0d329b7903a866228027263b2", size = 98188 },
+]
+
+[[package]]
+name = "colorama"
+version = "0.4.6"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/d8/53/6f443c9a4a8358a93a6792e2acffb9d9d5cb0a5cfd8802644b7b1c9a02e4/colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44", size = 27697 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d1/d6/3965ed04c63042e047cb6a3e6ed1a63a35087b6a609aa3a15ed8ac56c221/colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6", size = 25335 },
+]
+
+[[package]]
+name = "flake8"
+version = "7.1.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "mccabe" },
+    { name = "pycodestyle" },
+    { name = "pyflakes" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/58/16/3f2a0bb700ad65ac9663262905a025917c020a3f92f014d2ba8964b4602c/flake8-7.1.2.tar.gz", hash = "sha256:c586ffd0b41540951ae41af572e6790dbd49fc12b3aa2541685d253d9bd504bd", size = 48119 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/35/f8/08d37b2cd89da306e3520bd27f8a85692122b42b56c0c2c3784ff09c022f/flake8-7.1.2-py2.py3-none-any.whl", hash = "sha256:1cbc62e65536f65e6d754dfe6f1bada7f5cf392d6f5db3c2b85892466c3e7c1a", size = 57745 },
+]
+
+[[package]]
+name = "flake8-pyproject"
+version = "1.2.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "flake8" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/5f/1d/635e86f9f3a96b7ea9e9f19b5efe17a987e765c39ca496e4a893bb999112/flake8_pyproject-1.2.3-py3-none-any.whl", hash = "sha256:6249fe53545205af5e76837644dc80b4c10037e73a0e5db87ff562d75fb5bd4a", size = 4756 },
+]
+
+[[package]]
+name = "isort"
+version = "6.0.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/b8/21/1e2a441f74a653a144224d7d21afe8f4169e6c7c20bb13aec3a2dc3815e0/isort-6.0.1.tar.gz", hash = "sha256:1cb5df28dfbc742e490c5e41bad6da41b805b0a8be7bc93cd0fb2a8a890ac450", size = 821955 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c1/11/114d0a5f4dabbdcedc1125dee0888514c3c3b16d3e9facad87ed96fad97c/isort-6.0.1-py3-none-any.whl", hash = "sha256:2dc5d7f65c9678d94c88dfc29161a320eec67328bc97aad576874cb4be1e9615", size = 94186 },
+]
+
+[[package]]
+name = "mccabe"
+version = "0.7.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e7/ff/0ffefdcac38932a54d2b5eed4e0ba8a408f215002cd178ad1df0f2806ff8/mccabe-0.7.0.tar.gz", hash = "sha256:348e0240c33b60bbdf4e523192ef919f28cb2c3d7d5c7794f74009290f236325", size = 9658 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/27/1a/1f68f9ba0c207934b35b86a8ca3aad8395a3d6dd7921c0686e23853ff5a9/mccabe-0.7.0-py2.py3-none-any.whl", hash = "sha256:6c2d30ab6be0e4a46919781807b4f0d834ebdd6c6e3dca0bda5a15f863427b6e", size = 7350 },
+]
+
+[[package]]
+name = "mypy-extensions"
+version = "1.0.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/98/a4/1ab47638b92648243faf97a5aeb6ea83059cc3624972ab6b8d2316078d3f/mypy_extensions-1.0.0.tar.gz", hash = "sha256:75dbf8955dc00442a438fc4d0666508a9a97b6bd41aa2f0ffe9d2f2725af0782", size = 4433 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2a/e2/5d3f6ada4297caebe1a2add3b126fe800c96f56dbe5d1988a2cbe0b267aa/mypy_extensions-1.0.0-py3-none-any.whl", hash = "sha256:4392f6c0eb8a5668a69e23d168ffa70f0be9ccfd32b5cc2d26a34ae5b844552d", size = 4695 },
+]
+
+[[package]]
+name = "packaging"
+version = "24.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/d0/63/68dbb6eb2de9cb10ee4c9c14a0148804425e13c4fb20d61cce69f53106da/packaging-24.2.tar.gz", hash = "sha256:c228a6dc5e932d346bc5739379109d49e8853dd8223571c7c5b55260edc0b97f", size = 163950 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/88/ef/eb23f262cca3c0c4eb7ab1933c3b1f03d021f2c48f54763065b6f0e321be/packaging-24.2-py3-none-any.whl", hash = "sha256:09abb1bccd265c01f4a3aa3f7a7db064b36514d2cba19a2f694fe6150451a759", size = 65451 },
+]
+
+[[package]]
+name = "pathspec"
+version = "0.12.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ca/bc/f35b8446f4531a7cb215605d100cd88b7ac6f44ab3fc94870c120ab3adbf/pathspec-0.12.1.tar.gz", hash = "sha256:a482d51503a1ab33b1c67a6c3813a26953dbdc71c31dacaef9a838c4e29f5712", size = 51043 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/cc/20/ff623b09d963f88bfde16306a54e12ee5ea43e9b597108672ff3a408aad6/pathspec-0.12.1-py3-none-any.whl", hash = "sha256:a0d503e138a4c123b27490a4f7beda6a01c6f288df0e4a8b79c7eb0dc7b4cc08", size = 31191 },
+]
+
+[[package]]
+name = "platformdirs"
+version = "4.3.6"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/13/fc/128cc9cb8f03208bdbf93d3aa862e16d376844a14f9a0ce5cf4507372de4/platformdirs-4.3.6.tar.gz", hash = "sha256:357fb2acbc885b0419afd3ce3ed34564c13c9b95c89360cd9563f73aa5e2b907", size = 21302 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3c/a6/bc1012356d8ece4d66dd75c4b9fc6c1f6650ddd5991e421177d9f8f671be/platformdirs-4.3.6-py3-none-any.whl", hash = "sha256:73e575e1408ab8103900836b97580d5307456908a03e92031bab39e4554cc3fb", size = 18439 },
+]
+
+[[package]]
+name = "pycodestyle"
+version = "2.12.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/43/aa/210b2c9aedd8c1cbeea31a50e42050ad56187754b34eb214c46709445801/pycodestyle-2.12.1.tar.gz", hash = "sha256:6838eae08bbce4f6accd5d5572075c63626a15ee3e6f842df996bf62f6d73521", size = 39232 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3a/d8/a211b3f85e99a0daa2ddec96c949cac6824bd305b040571b82a03dd62636/pycodestyle-2.12.1-py2.py3-none-any.whl", hash = "sha256:46f0fb92069a7c28ab7bb558f05bfc0110dac69a0cd23c61ea0040283a9d78b3", size = 31284 },
+]
+
+[[package]]
+name = "pyflakes"
+version = "3.2.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/57/f9/669d8c9c86613c9d568757c7f5824bd3197d7b1c6c27553bc5618a27cce2/pyflakes-3.2.0.tar.gz", hash = "sha256:1c61603ff154621fb2a9172037d84dca3500def8c8b630657d1701f026f8af3f", size = 63788 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d4/d7/f1b7db88d8e4417c5d47adad627a93547f44bdc9028372dbd2313f34a855/pyflakes-3.2.0-py2.py3-none-any.whl", hash = "sha256:84b5be138a2dfbb40689ca07e2152deb896a65c3a3e24c251c5c62489568074a", size = 62725 },
+]
+
+[[package]]
+name = "rlc-cloud-repos"
+version = "0.1.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "black" },
+    { name = "flake8" },
+    { name = "flake8-pyproject" },
+    { name = "isort" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "black" },
+    { name = "flake8" },
+    { name = "flake8-pyproject" },
+    { name = "isort" },
+]
+
+
+================================================
+File: /README.md
+================================================
+# RLC Cloud Repos - Cloud-Agnostic Repository Auto-Configuration
+
+## Overview
+**RLC Cloud Repos** is a **cloud-init-powered, cloud-agnostic** repository configuration utility designed to:
+- Automatically **configure DNF/YUM repositories** for Rocky Linux Cloud (RLC) instances.
+- **Dynamically select the best repository mirror** based on the cloud provider and region.
+- **Seamlessly integrate with Cloud-Init**, ensuring repository configurations persist across reboots.
+- **Deploy updates via RPM packaging**, ensuring repository configurations stay up-to-date.
+
+## Problem Statement
+Deploying Rocky Linux on various **cloud providers** (AWS, Azure, GCP, OCI) requires **custom repository configurations**:
+- Different **mirror endpoints per cloud provider**.
+- Ensuring mirrors **match the region** for performance and availability.
+- **Fallbacks when a mirror is unavailable** (e.g., AWS instances in `us-west-1` fallback to `us-east-1`).
+- Ensuring **Cloud-Init properly integrates the repository configurations** during instance boot.
+
+### **Why This Matters**
+1. **Eliminates manual repository setup** - Ensures the correct repository is auto-configured at first boot.
+2. **Optimized package updates** - Selects the closest and most available repository, reducing latency.
+3. **Cloud-Native Design** - Uses **Cloud-Init's metadata querying** instead of relying on hardcoded cloud provider APIs.
+4. **Updatable Without Reimaging** - Repository settings can be updated dynamically via RPM package updates.
+
+---
+
+## **Architecture**
+The system is designed as **modular components** that work together to **detect cloud provider, determine region, configure repositories, and integrate with Cloud-Init**.
+
+### **System Flow**
+
+```ascii
++---------------------------+
+|   Instance Boots Up       |
++---------------------------+
+           |
+           v
++---------------------------+
+| Detect Cloud Provider     |
+| (Cloud-Init JSON / IMDS)  |
++---------------------------+
+           |
+           v
++---------------------------+
+|  Detect Region            |
+|  (Cloud-Init Metadata)    |
++---------------------------+
+           |
+           v
++---------------------------+
+| Determine Repo Mirrors    |
+| (Per Provider Rules)      |
++---------------------------+
+           |
+           v
++---------------------------+
+| Configure Repo Files      |
+| (/etc/yum.repos.d/)       |
++---------------------------+
+           |
+           v
++---------------------------+
+| Persist Configs & Reboot  |
++---------------------------+
+```
+
+---
+
+### **Core Components**
+
+#### 🟢 **Cloud Metadata Handler (`cloud_metadata.py`)**
+
+- Reads **Cloud-Init instance-data JSON** (`/run/cloud-init/result.json`).
+- Fallback: Queries **metadata service APIs** for AWS, Azure, GCP, OCI.
+- Determines:
+    - **Cloud Provider** (AWS, Azure, GCP, OCI).
+    - **Region** (`us-west-2`, `eastus`, etc.).
+    - **Fallback mirror location** (if a mirror isn't available in the detected region).
+
+#### 🟢 **Repository Configuration Manager (`repo_config.py`)**
+
+- Dynamically **generates `.repo` files** in `/etc/yum.repos.d/`.
+- Uses **templated repository URLs**, selecting:
+    - **Primary mirror** (closest to detected region).
+    - **Backup mirror** (in case of failure).
+- Ensures **repositories remain configured properly after reboot**.
+
+#### 🟢 **Cloud-Init Execution Manager (`cloud_init_config.py`)**
+
+- **Sets `$baseurl` and `$contentdir`** dynamically using cloud metadata.
+- **Runs once per boot**, ensuring repo settings are up-to-date.
+- Ensures **persistence** across reboots.
+
+---
+
+## **Implementation Details**
+
+### 🛠️ **How It Works**
+
+1. **Cloud-Init triggers the script** during first boot.
+2. **Cloud Metadata Handler detects cloud provider & region**.
+3. **Repo Config Manager selects the correct mirrors** based on geolocation.
+4. **Config files are written to `/etc/yum.repos.d/`**.
+5. **Settings persist between reboots**.
+
+### 📦 **Packaging & Deployment**
+
+- Packaged as an **RPM (`ciq-extras` repo)** for easy updates.
+- Installed via `dnf` or **preloaded in cloud images**.
+- Updates are deployed **without requiring new AMIs or VM images**.
+
+---
+
+## **Supported Cloud Providers**
+
+| Cloud Provider | Metadata Source | Primary Mirror | Backup Mirror |
+| --- | --- | --- | --- |
+| **AWS** | Cloud-Init / IMDS | `depot.<region>.prod.ciqws.com` | `us-east-1` |
+| **Azure** | Cloud-Init / IMDS | `eastus` | `westus2` |
+| **Google** | Cloud-Init / IMDS | `Azure's closest mirror` | `westus2` |
+| **Oracle** | Cloud-Init / IMDS | `us-sanjose-1` | `Azure eastus` |
+
+---
+
+## **Configuration & Customization**
+
+### **Modifying Repository Selection**
+
+- Repository mirror settings can be **overridden manually** in `/etc/ciq-repo-autoconfig.conf`.
+- To disable automatic repo updates:
+
+```bash
+touch /etc/ciq-repo-disable
+```
+
+### **Manually Running the Script**
+
+To manually trigger the configuration:
+
+    `/usr/local/bin/rlc-cloud-repos`
+
+## **Installation & Usage**
+
+### **Installing via RPM**
+
+1. Install the package:
+    
+    `dnf install rlc-cloud-repos`
+    
+2. Check that repositories are properly configured:
+    
+    `cat /etc/yum.repos.d/ciq.repo`
+
+---
+
+## **Future Enhancements**
+
+✔ **Add support for new cloud providers** (Alibaba, OpenStack).  
+✔ **Improve logging & debugging capabilities**.  
+✔ **Integrate `depot-client` for advanced repository management**.
+
+---
+
+## 🧠 Development Notes
+
+### 🔀 Current Development Branch
+
+`git@github.com:ctrliq/rlc-cloud-repos.git Branch: dev`
+
+This is the active branch for development. Use this to track commits and open PRs.
+
+---
+
+### ✅ What’s Locked In
+
+- **Single touch file** at `/etc/ciq-repo-disable`
+    
+    - Prevents re-running config logic if it exists.
+    - Created after first successful run.
+    - **Removed during RPM upgrades** to allow re-run at next boot.
+- **Cloud metadata detection**:
+    
+    - Primary: `/run/cloud-init/instance-data.json`
+    - Fallback: cloud metadata service endpoints
+
+- **Repo logic**:
+    
+    - Region → Mirror mapping handled via external YAML shipped in RPM
+    - Template baseurl:
+        
+        `https://$baseurl/$contentdir/rocky-lts-$releasever.$basearch`
+        
+- **Repo RPM Integration**:
+    
+    - `%posttrans` hook to clear the disable file
+    - Auto-triggers config next boot post-upgrade
+
+---
+
+### 📦 Region Matrix Logic
+
+**Matrix source**: Confluence cloud region → mirror → fallback mapping.
+
+We're controlling this via:
+
+- A **structured YAML file** bundled in the RPM
+- Can be updated without code changes
+- Ensures mirror selection logic stays versioned and source-controlled
+
+---
+
+### 🌱 Potential FeatureRequests for Depot
+
+- **Depot-side region detection + redirect logic**
+    
+    - `?provider=aws&region=us-west-2` style endpoint
+    - Moves region logic out of the client, simplifies maintenance
+- **Mirrorlist-style smart fallback**
+    
+    - Real-time mirror health + GeoIP routing
+    - Similar to Fedora/CentOS mirrorlist
+    - Requires discussion with Depot maintainers
+
+---
+
+### 🧪 Design Decision: First Boot vs Every Boot
+
+We've **intentionally made this run only on first boot**, with control via a touch file:
+
+- Reduces surprise side effects for downstream sysadmins
+- Avoids overwriting repo config on every reboot
+- Clean opt-in for reconfig after upgrade
+
+## **Contributing**
+
+- Open an issue or submit a pull request on GitHub.
+- Ensure code adheres to **PEP8 standards** (autoformatted with Black).
+- Test changes on a cloud instance before submitting.
+
+---
+
+## **License**
+
+**RLC Cloud Repos** is licensed under the **Apache 2.0 License**.
+
+---
+
+## **Authors**
+
+**CIQ Solutions Delivery Engineering Team**  
+[https://github.com/ctrliq/rlc-cloud-repos](https://github.com/ctrliq/rlc-cloud-repos)
+
+================================================
+File: /.python-version
+================================================
+3.13
+
+
+================================================
+File: /src/rlc_cloud_repos/__init__.py
+================================================
+__version__ = "0.1.0"
+
+from .cloud_metadata import get_cloud_metadata
+from .repo_config import select_mirror, build_repo_config
+
+
+================================================
+File: /src/rlc_cloud_repos/repo_config.py
+================================================
+import configparser
+
+def select_mirror(metadata):
+    """Select the appropriate mirror based on provider and region."""
+    provider = metadata.provider.lower()
+    # Example mirror mapping – in practice, load from a YAML file or similar.
+    mirror_map = {
+        "aws": "http://aws.mirror.example.com",
+        "azure": "http://azure.mirror.example.com",
+        "oracle": "http://oracle.mirror.example.com",
+        "gcp": "http://azure.mirror.example.com",  # Fallback for GCP
+    }
+    return mirror_map.get(provider, "http://default.mirror.example.com")
+
+def build_repo_config(metadata, mirror_url):
+    """Build the repository configuration using the selected mirror."""
+    config = configparser.ConfigParser()
+    section = "base"
+    config.add_section(section)
+    config.set(section, "name", f"{metadata.provider.upper()} Mirror")
+    config.set(section, "baseurl", f"{mirror_url}/{metadata.region}/rocky-lts-$releasever.$basearch")
+    config.set(section, "enabled", "1")
+    return config
+
+
+================================================
+File: /src/rlc_cloud_repos/cloud_metadata.py
+================================================
+import json
+
+class CloudMetadata:
+    def __init__(self, provider, region, instance_id, additional_info=None):
+        self.provider = provider
+        self.region = region
+        self.instance_id = instance_id
+        self.additional_info = additional_info or {}
+
+    def __repr__(self):
+        return (f"CloudMetadata(provider={self.provider}, region={self.region}, "
+                f"instance_id={self.instance_id}, additional_info={self.additional_info})")
+
+def get_cloud_metadata():
+    """
+    Retrieve cloud metadata using cloud-init's query API.
+    For now, this is a dummy implementation.
+    """
+    # This dummy data should be replaced with actual metadata query logic.
+    data = {
+        "provider": "AWS",
+        "region": "us-west-2",
+        "instance_id": "i-1234567890abcdef0",
+        "additional_info": {"availability_zone": "us-west-2a"}
+    }
+    return CloudMetadata(**data)
+
+
+================================================
+File: /setup.cfg
+================================================
+[metadata]
+name = cloud_init_utils
+version = 0.1.0
+description = A universal cloud-init querying and repository configuration tool
+author = Your Name
+author_email = your.email@example.com
+
+[options]
+packages = find:
+install_requires =
+    cloud-init
+

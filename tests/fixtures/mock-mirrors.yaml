@@ -1,0 +1,8 @@
+aws:
+  us-west-2:
+    primary: https://aws.usw2.repo.mock.ciq
+    backup: https://aws.use1.repo.mock.ciq
+  default:
+    primary: https://aws.use1.repo.mock.ciq
+default:
+  primary: https://default.repo.mock.ciq

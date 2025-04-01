@@ -1,0 +1,9 @@
+{
+  "ds": {
+    "metadata": {
+      "cloud_name": "aws",
+      "region": "us-west-2",
+      "instance_id": "i-mock123456"
+    }
+  }
+}
