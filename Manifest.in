@@ -1,1 +1,1 @@
-include src/rlc_cloud_repos/data/mirrors.yaml
+include src/rlc_cloud_repos/data/ciq-mirrors.yaml

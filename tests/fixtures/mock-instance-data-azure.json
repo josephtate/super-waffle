@@ -1,0 +1,9 @@
+{
+    "ds": {
+        "metadata": {
+            "cloud_name": "azure",
+            "region": "eastus",
+            "instance_id": "azure-i-mock123"
+        }
+    }
+}

@@ -1,39 +1,66 @@
+# src/rlc_cloud_repos/repo_config.py
 import configparser
+import logging
 import os
 import yaml
 from pathlib import Path
 from typing import Any, Optional
 from rlc_cloud_repos.cloud_metadata import CloudMetadata
 
+logger = logging.getLogger(__name__)
 
-def load_mirror_map(yaml_path: str = None) -> dict[str, Any]:
+
+def load_mirror_map(yaml_path: Optional[str] = None) -> dict[str, Any]:
     """
-    Load mirror mapping from a YAML file.
-    Path can be overridden via env var or passed directly.
+    Loads the YAML mirror map config.
+
+    Args:
+        yaml_path (str, optional): Custom path to YAML config.
+
+    Returns:
+        dict[str, Any]: Mirror map dictionary.
+
+    Raises:
+        FileNotFoundError: If file does not exist.
+        ValueError: If YAML is invalid.
     """
     yaml_path = (
         yaml_path or
         os.getenv("RLC_MIRROR_MAP_PATH") or
-        "/etc/rlc-cloud-repos/mirrors.yaml"
+        "/etc/rlc-cloud-repos/ciq-mirrors.yaml"
     )
     path = Path(yaml_path)
 
     if not path.exists():
+        logger.error("Mirror YAML not found at %s", yaml_path)
         raise FileNotFoundError(f"Mirror config YAML not found at {yaml_path}")
 
     try:
         with path.open("r", encoding="utf-8") as f:
             return yaml.safe_load(f)
     except yaml.YAMLError as e:
+        logger.exception("YAML parsing error")
         raise ValueError(f"Invalid YAML in mirror map: {e}")
 
 
 def select_mirror(metadata: CloudMetadata, mirror_map: dict[str, Any]) -> str:
     """
-    Select the appropriate mirror URL using primary/backup logic.
+    Chooses the best mirror URL for the given cloud metadata.
+
+    Args:
+        metadata (CloudMetadata): Cloud region + provider info.
+        mirror_map (dict): Parsed YAML mirror map.
+
+    Returns:
+        str: Selected mirror URL.
+
+    Raises:
+        ValueError: If no usable mirror is found.
     """
     provider = metadata.provider.lower()
     region = metadata.region
+
+    logger.info("Selecting mirror for provider=%s, region=%s", provider, region)
 
     provider_map = mirror_map.get(provider, {})
 
@@ -42,26 +69,32 @@ def select_mirror(metadata: CloudMetadata, mirror_map: dict[str, Any]) -> str:
         if isinstance(region_map, dict):
             return region_map.get("primary") or region_map.get("backup")
 
-        if "default" in provider_map:
-            default_map = provider_map["default"]
-            if isinstance(default_map, dict):
-                return default_map.get("primary") or default_map.get("backup")
-            elif isinstance(default_map, str):
-                return default_map
+        default_map = provider_map.get("default")
+        if isinstance(default_map, dict):
+            return default_map.get("primary") or default_map.get("backup")
+        elif isinstance(default_map, str):
+            return default_map
 
-    # Global fallback
-    global_fallback = mirror_map.get("default")
-    if isinstance(global_fallback, dict):
-        return global_fallback.get("primary") or global_fallback.get("backup")
-    elif isinstance(global_fallback, str):
-        return global_fallback
+    fallback = mirror_map.get("default")
+    if isinstance(fallback, dict):
+        return fallback.get("primary") or fallback.get("backup")
+    elif isinstance(fallback, str):
+        return fallback
 
+    logger.error("No mirror found for provider=%s, region=%s", provider, region)
     raise ValueError(f"No mirror found for provider={provider}, region={region}")
 
 
 def build_repo_config(metadata: CloudMetadata, mirror_url: str) -> configparser.ConfigParser:
     """
-    Build a repo configuration object using the selected mirror URL.
+    Constructs a YUM repo config object using the mirror URL.
+
+    Args:
+        metadata (CloudMetadata): Provider/region for naming.
+        mirror_url (str): Selected mirror base URL.
+
+    Returns:
+        configparser.ConfigParser: Section with repo data.
     """
     config = configparser.ConfigParser()
     section = "base"
@@ -69,4 +102,5 @@ def build_repo_config(metadata: CloudMetadata, mirror_url: str) -> configparser.
     config.set(section, "name", f"{metadata.provider.upper()} Mirror")
     config.set(section, "baseurl", f"{mirror_url}/{metadata.region}/rocky-lts-$releasever.$basearch")
     config.set(section, "enabled", "1")
+    logger.debug("Built repo config for provider=%s", metadata.provider)
     return config

@@ -47,3 +47,17 @@ clean:
 	find . -type d -name "*.dist-info" -exec rm -rf {} +
 	find . -type d -name "*.egg-info" -exec rm -rf {} +
 	rm -rf ~/.cache/pip/wheels/*
+
+RPM_FILE := $(shell find ~/rpmbuild/RPMS/noarch -name 'rlc-cloud-repos-*.rpm' | sort -V | tail -n 1)
+REMOTE_USER := rocky
+REMOTE_HOST := 54.88.46.215
+REMOTE_PATH := /home/rocky/
+
+publish: 
+	@echo "📦 Publishing latest RPM to $(REMOTE_USER)@$(REMOTE_HOST):$(REMOTE_PATH)"
+	scp /home/jhanger/rpmbuild/RPMS/noarch/rlc-cloud-repos-0.1.0-1.el9.noarch.rpm ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_PATH}
+	ssh $(REMOTE_USER)@$(REMOTE_HOST) 'sudo rpm -e rlc-cloud-repos || true'
+	ssh $(REMOTE_USER)@$(REMOTE_HOST) 'sudo rpm -Uvh --nodeps $(notdir $(RPM_FILE)) && rlc-cloud-repos'
+
+test-remote:
+	ssh $(REMOTE_USER)@$(REMOTE_HOST) 'rlc-cloud-repos'

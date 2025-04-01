@@ -4,5 +4,13 @@ aws:
     backup: https://aws.use1.repo.mock.ciq
   default:
     primary: https://aws.use1.repo.mock.ciq
+
+azure:
+  eastus:
+    primary: https://azure.eastus.repo.mock.ciq
+    backup: https://azure.westus2.repo.mock.ciq
+  default:
+    primary: https://azure.default.repo.mock.ciq
+
 default:
   primary: https://default.repo.mock.ciq
