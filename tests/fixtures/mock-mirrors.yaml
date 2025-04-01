@@ -12,5 +12,17 @@ azure:
   default:
     primary: https://azure.default.repo.mock.ciq
 
+gcp:
+  default:
+    primary: https://azure.eastus.repo.mock.ciq # Fallback to Azure region
+    backup: https://azure.westus2.repo.mock.ciq
+
+oracle:
+  us-ashburn-1:
+    primary: https://oracle.depot.mock.ciq
+    backup: https://azure.eastus.repo.mock.ciq
+  default:
+    primary: https://oracle.depot.mock.ciq
+
 default:
   primary: https://default.repo.mock.ciq

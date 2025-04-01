@@ -9,7 +9,10 @@ description = "A universal cloud-init querying and repository configuration tool
 readme = "README.md"
 requires-python = ">=3.8"
 authors = [{ name = "Joel Hanger", email = "jhanger@ciq.com" }]
-dependencies = ["PyYAML", "ruamel.yaml"]
+dependencies = [
+    "pyyaml",
+ "ruamel.yaml",
+]
 
 [project.scripts]
 rlc-cloud-repos = "rlc_cloud_repos.main:main"

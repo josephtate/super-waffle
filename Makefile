@@ -61,3 +61,12 @@ publish:
 
 test-remote:
 	ssh $(REMOTE_USER)@$(REMOTE_HOST) 'rlc-cloud-repos'
+
+# Testing
+PYTHON ?= python3
+PYTHONPATH := src
+
+.PHONY: test
+test:
+	@echo "🧪 Running test suite with pytest..."
+	@PYTHONPATH=$(PYTHONPATH) $(PYTHON) -m pytest -v tests
