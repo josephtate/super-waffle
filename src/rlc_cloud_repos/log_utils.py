@@ -10,6 +10,11 @@ Author: Joel Hanger
 import logging
 import sys
 
+try:
+    from systemd.journal import JournalHandler
+except ImportError:
+    JournalHandler = None  # fallback handled below
+
 logger = logging.getLogger("rlc-cloud-repos")
 
 
@@ -34,22 +39,31 @@ def log_and_print(msg: str, level: str = "info") -> None:
 
 def setup_logging(debug: bool = False) -> None:
     """
-    Configure logging to syslog by default, with optional console output for debugging.
+    Configure logging to systemd journal if available, otherwise fallback to syslog or stderr.
     """
-    logger = logging.getLogger("rlc-cloud-repos")
+    global logger
     logger.setLevel(logging.DEBUG if debug else logging.INFO)
 
-    # Syslog handler (journald or /dev/log)
-    try:
-        syslog_address = "/dev/log" if sys.platform != "darwin" else "/var/run/syslog"
-        syslog_handler = logging.handlers.SysLogHandler(address=syslog_address)
-        syslog_format = logging.Formatter("rlc-cloud-repos: [%(levelname)s] %(message)s")
-        syslog_handler.setFormatter(syslog_format)
-        logger.addHandler(syslog_handler)
-    except Exception as e:
-        # Fallback if syslog isn't available (e.g., inside containers)
-        logging.basicConfig(level=logging.INFO)
-        logger.warning("Syslog unavailable, falling back to stderr")
+    # Only add handlers once
+    if logger.hasHandlers():
+        return
+
+    if JournalHandler:
+        handler = JournalHandler()
+        handler.setFormatter(logging.Formatter("[%(levelname)s] %(message)s"))
+        handler._extra["SYSLOG_IDENTIFIER"] = "rlc-cloud-repos"
+        logger.addHandler(handler)
+    else:
+        # Fallback to /dev/log syslog (tagged with 'rlc-cloud-repos')
+        try:
+            syslog_address = "/dev/log" if sys.platform != "darwin" else "/var/run/syslog"
+            syslog_handler = logging.handlers.SysLogHandler(address=syslog_address)
+            syslog_handler.ident = 'rlc-cloud-repos: '
+            syslog_handler.setFormatter(logging.Formatter('[%(levelname)s] %(message)s'))
+            logger.addHandler(syslog_handler)
+        except Exception:
+            logging.basicConfig(level=logging.INFO)
+            logger.warning("Syslog unavailable, falling back to stderr")
 
     if debug:
         console_handler = logging.StreamHandler()

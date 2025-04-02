@@ -38,6 +38,8 @@ fi
 echo "🔍 Checking journal for syslog entries..."
 if sudo journalctl -t "$SYSLOG_TAG" --since "5 minutes ago" | grep -q "rlc-cloud-repos"; then
     echo "✅ Syslog entry found for tag '$SYSLOG_TAG'"
+    echo "🪵 Recent journal entries for rlc-cloud-repos:"
+    journalctl -t rlc-cloud-repos -n 20 --no-pager
 else
     echo "⚠️  No syslog entry found (may be expected in minimal systems)"
 fi

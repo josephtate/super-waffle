@@ -12,7 +12,6 @@ Author: Joel Hanger
 Created: 2025-03
 License: CIQ Proprietary
 """
-
 import argparse
 import logging
 import logging.handlers
@@ -20,8 +19,8 @@ import sys
 import os
 from datetime import datetime
 from rlc_cloud_repos.cloud_metadata import get_cloud_metadata, CloudMetadata
+from rlc_cloud_repos.log_utils import setup_logging, log_and_print, logger
 from rlc_cloud_repos.dnf_vars import ensure_all_dnf_vars
-from rlc_cloud_repos.log_utils import setup_logging, log_and_print
 from rlc_cloud_repos.repo_config import (
     load_mirror_map,
     select_mirror,
@@ -32,8 +31,6 @@ DEFAULT_MIRROR_PATH = "/etc/rlc-cloud-repos/ciq-mirrors.yaml"
 DEFAULT_OUTPUT_PATH = "/etc/yum.repos.d/rlc-depot.repo"
 TOUCHFILE = "/etc/rlc-cloud-repos/.configured"
 
-# --- Logger Setup ---
-logger = logging.getLogger("rlc-cloud-repos")
 
 def check_touchfile() -> None:
     """
@@ -43,7 +40,7 @@ def check_touchfile() -> None:
     automatically after successful configuration.
     """
     if os.path.exists(TOUCHFILE):
-        print(f"[INFO] Touchfile exists ({TOUCHFILE}). Skipping repo update.")
+        log_and_print(f"Touchfile exists ({TOUCHFILE}). Skipping repo update.")
         sys.exit(0)
 
 
@@ -86,6 +83,7 @@ def main() -> int:
 
     # Step 1: Detect or override cloud/region
     metadata: CloudMetadata = get_cloud_metadata()
+    log_and_print(f"Using cloud metadata: provider={metadata.provider}, region={metadata.region}")
     if args.cloud:
         metadata.provider = args.cloud
     if args.region:
@@ -94,10 +92,13 @@ def main() -> int:
     # Step 2: Load mirror map and select appropriate URL
     mirror_file_path = args.mirror_file or DEFAULT_MIRROR_PATH
     mirror_map = load_mirror_map(mirror_file_path)
+    log_and_print(f"Loaded mirror map from {mirror_file_path}")
     mirror_url = select_mirror(metadata, mirror_map)
+    log_and_print(f"Selected mirror URL: {mirror_url}")
 
     # Step 3: Ensure all DNF variables are set
     ensure_all_dnf_vars(metadata, mirror_url)
+    logger.info("DNF vars set for region=%s and mirror=%s", metadata.region, mirror_url)
     
     # Step 4: Output repo URL or generate .repo file
     if args.format == "url":
@@ -116,12 +117,14 @@ def main() -> int:
                     f.write(repo_text + "\n")
                 log_and_print("info", f"Wrote repo to {output_path}")
                 write_touchfile()
+                log_and_print(f"Touchfile written to {TOUCHFILE}")
             except Exception as e:
                 log_and_print("error", f"❌ Failed to write repo file: {e}")
                 return 1
         else:
             log_and_print("info", repo_text)
             write_touchfile()
+            log_and_print(f"Touchfile written to {TOUCHFILE}")
 
     return 0
 
