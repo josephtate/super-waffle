@@ -26,12 +26,27 @@ logger = logging.getLogger(__name__)
 
 
 def _write_dnf_var(name: str, value: str):
-    """Writes a single DNF variable if it doesn't already exist."""
+    """Writes or updates a DNF variable, backing up existing and respecting read-only files."""
     path = DNF_VARS_DIR / name
-    if path.exists():
-        return
-    DNF_VARS_DIR.mkdir(parents=True, exist_ok=True)
-    path.write_text(f"{value}\n")
+    backup = path.with_suffix(".bak")
+
+    try:
+        # Create parent directory if needed
+        DNF_VARS_DIR.mkdir(parents=True, exist_ok=True)
+
+        # If file exists and is writable, backup and overwrite
+        if path.exists():
+            if not os.access(path, os.W_OK):
+                logger.warning("Cannot write to DNF var '%s' (read-only), skipping", name)
+                return
+            path.rename(backup)
+            logger.info("Backed up existing var '%s' to '%s'", name, backup)
+
+        path.write_text(f"{value}\n")
+        logger.info("Set DNF var '%s' = '%s'", name, value)
+
+    except Exception as e:
+        logger.error("Failed to write DNF var '%s': %s", name, e)
 
 
 def _parse_rocky_release() -> str:
@@ -47,23 +62,6 @@ def _parse_rocky_release() -> str:
 
     match = re.search(r"Rocky Linux release (\d+)", rocky_file.read_text())
     return f"rl{match.group(1)}" if match else "rl-unknown"
-
-
-def _parse_stream_version() -> str:
-    """
-    Determines stream version from /etc/os-release or fallback.
-
-    Returns:
-        str: e.g., '9-stream'
-    """
-    os_release = Path("/etc/os-release")
-    if not os_release.exists():
-        return "9-stream"
-
-    for line in os_release.read_text().splitlines():
-        if line.startswith("VERSION_ID="):
-            return line.split("=")[1].strip('"') + "-stream"
-    return "9-stream"
 
 
 def ensure_all_dnf_vars(metadata: CloudMetadata, mirror_url: str):

@@ -29,10 +29,6 @@ rpm: sdist
 		exit 1; \
 	fi
 
-test:
-	@echo "🤪 Running tests..."
-	PYTHONPATH=src python3 tests/test_cloud_repos.py
-
 lint:
 	@echo "🔍 Running linters..."
 	black --check src tests
@@ -59,10 +55,17 @@ publish:
 	ssh $(REMOTE_USER)@$(REMOTE_HOST) 'sudo rpm -e rlc-cloud-repos || true'
 	ssh $(REMOTE_USER)@$(REMOTE_HOST) 'sudo rpm -Uvh --nodeps $(notdir $(RPM_FILE)) && rlc-cloud-repos'
 
-test-remote:
+test-remote-cli:
 	@echo "🧪 Running remote integration test on $(REMOTE_HOST)..."
 	scp tests/scripts/test_remote_behavior.sh $(REMOTE_USER)@$(REMOTE_HOST):/tmp/test_remote_behavior.sh
 	ssh $(REMOTE_USER)@$(REMOTE_HOST) 'bash /tmp/test_remote_behavior.sh'
+
+test-remote-dnf:
+	@echo "🧪 Running remote DNF var test on $(REMOTE_HOST)..."
+	scp tests/scripts/test_dnf_vars_behavior.sh $(REMOTE_HOST):/tmp/test_dnf_vars_behavior.sh
+	ssh $(REMOTE_HOST) 'bash /tmp/test_dnf_vars_behavior.sh'
+
+test-remote: test-remote-cli test-remote-dnf
 
 # Testing
 PYTHON ?= python3

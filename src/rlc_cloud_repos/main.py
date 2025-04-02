@@ -29,7 +29,7 @@ from rlc_cloud_repos.repo_config import (
 
 DEFAULT_MIRROR_PATH = "/etc/rlc-cloud-repos/ciq-mirrors.yaml"
 DEFAULT_OUTPUT_PATH = "/etc/yum.repos.d/rlc-depot.repo"
-TOUCHFILE = "/etc/rlc-cloud-repos/.configured"
+MARKERFILE = "/etc/rlc-cloud-repos/.configured"
 
 
 def check_touchfile() -> None:
@@ -39,8 +39,8 @@ def check_touchfile() -> None:
     Creates an idempotent barrier to prevent re-running this tool
     automatically after successful configuration.
     """
-    if os.path.exists(TOUCHFILE):
-        log_and_print(f"Touchfile exists ({TOUCHFILE}). Skipping repo update.")
+    if os.path.exists(MARKERFILE):
+        log_and_print(f"Marker file exists ({MARKERFILE}). Skipping repo update.")
         sys.exit(0)
 
 
@@ -50,8 +50,8 @@ def write_touchfile() -> None:
 
     This prevents the repo from being configured more than once automatically.
     """
-    os.makedirs(os.path.dirname(TOUCHFILE), exist_ok=True)
-    with open(TOUCHFILE, "w") as f:
+    os.makedirs(os.path.dirname(MARKERFILE), exist_ok=True)
+    with open(MARKERFILE, "w") as f:
         f.write(f"Configured on {datetime.now().isoformat()}\n")
 
 
@@ -117,14 +117,14 @@ def main() -> int:
                     f.write(repo_text + "\n")
                 log_and_print("info", f"Wrote repo to {output_path}")
                 write_touchfile()
-                log_and_print(f"Touchfile written to {TOUCHFILE}")
+                log_and_print(f"Marker file written to {MARKERFILE}")
             except Exception as e:
                 log_and_print("error", f"❌ Failed to write repo file: {e}")
                 return 1
         else:
             log_and_print("info", repo_text)
             write_touchfile()
-            log_and_print(f"Touchfile written to {TOUCHFILE}")
+            log_and_print(f"Marker file written to {MARKERFILE}")
 
     return 0
 
