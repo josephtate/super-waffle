@@ -96,9 +96,28 @@ aws:
     backup: https://depot.us-east-1.prod.ciqws.com
 
 azure:
+  eastus:
+    primary: https://depot.eastus.prod.azure.ciq.com
+    backup: https://depot.westus2.prod.azure.ciq.com
+
+  australiaeast:
+    primary: https://depot.australiaeast.prod.azure.ciq.com
+    backup: https://depot.westus2.prod.azure.ciq.com
+
+  northeurope:
+    primary: https://depot.northeurope.prod.azure.ciq.com
+    backup: https://depot.westus2.prod.azure.ciq.com
+
+  southeastasia:
+    primary: https://depot.southeastasia.prod.azure.ciq.com
+    backup: https://depot.westus2.prod.azure.ciq.com
+
+  westus2:
+    primary: https://depot.westus2.prod.azure.ciq.com
+    backup: https://depot.eastus.prod.azure.ciq.com
+
   default:
-    primary: https://mirror.eastus.azure.ciq.dev
-    backup: https://mirror.westus2.azure.ciq.dev
+    primary: https://depot.eastus.prod.azure.ciq.com
 
 gcp:
   default:

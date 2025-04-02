@@ -8,7 +8,7 @@ to /etc/yum.repos.d.
 
 Supports AWS, Azure, GCP, Oracle with override options.
 
-Author: Your Name
+Author: Joel Hanger
 Created: 2025-03
 License: CIQ Proprietary
 """
@@ -20,6 +20,7 @@ import sys
 import os
 from datetime import datetime
 from rlc_cloud_repos.cloud_metadata import get_cloud_metadata, CloudMetadata
+from rlc_cloud_repos.dnf_vars import ensure_all_dnf_vars
 from rlc_cloud_repos.repo_config import (
     load_mirror_map,
     select_mirror,
@@ -119,7 +120,10 @@ def main() -> int:
     mirror_map = load_mirror_map(mirror_file_path)
     mirror_url = select_mirror(metadata, mirror_map)
 
-    # Step 3: Output repo URL or generate .repo file
+    # Step 3: Ensure all DNF variables are set
+    ensure_all_dnf_vars(metadata, mirror_url)
+    
+    # Step 4: Output repo URL or generate .repo file
     if args.format == "url":
         print(mirror_url)
     else:
