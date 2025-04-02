@@ -70,3 +70,5 @@ PYTHONPATH := src
 test:
 	@echo "🧪 Running test suite with pytest..."
 	@PYTHONPATH=$(PYTHONPATH) $(PYTHON) -m pytest -v tests
+
+all: clean rpm publish clean
