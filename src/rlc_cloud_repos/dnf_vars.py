@@ -22,6 +22,7 @@ from pathlib import Path
 from rlc_cloud_repos.cloud_metadata import CloudMetadata
 
 DNF_VARS_DIR = Path("/etc/dnf/vars")
+BACKUP_SUFFIX = ".bak"
 
 logger = logging.getLogger(__name__)
 
