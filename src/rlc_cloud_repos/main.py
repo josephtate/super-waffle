@@ -21,6 +21,7 @@ import os
 from datetime import datetime
 from rlc_cloud_repos.cloud_metadata import get_cloud_metadata, CloudMetadata
 from rlc_cloud_repos.dnf_vars import ensure_all_dnf_vars
+from rlc_cloud_repos.log_utils import setup_logging, log_and_print
 from rlc_cloud_repos.repo_config import (
     load_mirror_map,
     select_mirror,
@@ -57,32 +58,6 @@ def write_touchfile() -> None:
         f.write(f"Configured on {datetime.now().isoformat()}\n")
 
 
-def setup_logging(debug: bool = False) -> None:
-    """
-    Configure logging to syslog by default, with optional console output for debugging.
-    """
-    logger = logging.getLogger("rlc-cloud-repos")
-    logger.setLevel(logging.DEBUG if debug else logging.INFO)
-
-    # Syslog handler (journald or /dev/log)
-    try:
-        syslog_address = "/dev/log" if sys.platform != "darwin" else "/var/run/syslog"
-        syslog_handler = logging.handlers.SysLogHandler(address=syslog_address)
-        syslog_format = logging.Formatter("rlc-cloud-repos: [%(levelname)s] %(message)s")
-        syslog_handler.setFormatter(syslog_format)
-        logger.addHandler(syslog_handler)
-    except Exception as e:
-        # Fallback if syslog isn't available (e.g., inside containers)
-        logging.basicConfig(level=logging.INFO)
-        logger.warning("Syslog unavailable, falling back to stderr")
-
-    if debug:
-        console_handler = logging.StreamHandler()
-        console_handler.setLevel(logging.DEBUG)
-        console_handler.setFormatter(logging.Formatter("[%(levelname)s] %(message)s"))
-        logger.addHandler(console_handler)
-
-
 def main() -> int:
     """
     Entry point for the CLI utility.
@@ -90,6 +65,7 @@ def main() -> int:
     Parses CLI args, performs metadata detection, resolves repo mirrors,
     and writes repo files if requested.
     """
+    setup_logging()
     check_touchfile()
 
     parser = argparse.ArgumentParser(
@@ -125,7 +101,7 @@ def main() -> int:
     
     # Step 4: Output repo URL or generate .repo file
     if args.format == "url":
-        print(mirror_url)
+        log_and_print("info", mirror_url)
     else:
         config = build_repo_config(metadata, mirror_url)
         lines = ["[base]"]
@@ -138,13 +114,13 @@ def main() -> int:
             try:
                 with open(output_path, "w") as f:
                     f.write(repo_text + "\n")
-                print(f"Wrote repo to {output_path}")
+                log_and_print("info", f"Wrote repo to {output_path}")
                 write_touchfile()
             except Exception as e:
-                print(f"❌ Failed to write repo file: {e}", file=sys.stderr)
+                log_and_print("error", f"❌ Failed to write repo file: {e}")
                 return 1
         else:
-            print(repo_text)
+            log_and_print("info", repo_text)
             write_touchfile()
 
     return 0

@@ -15,12 +15,14 @@ Variables Managed:
 - sigcontentdir: SIG-specific content path (typically 'pub/sig')
 """
 
-import os
+import logging
 import re
 from pathlib import Path
 from rlc_cloud_repos.cloud_metadata import CloudMetadata
 
 DNF_VARS_DIR = Path("/etc/dnf/vars")
+
+logger = logging.getLogger(__name__)
 
 
 def _write_dnf_var(name: str, value: str):

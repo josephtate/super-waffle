@@ -60,7 +60,9 @@ publish:
 	ssh $(REMOTE_USER)@$(REMOTE_HOST) 'sudo rpm -Uvh --nodeps $(notdir $(RPM_FILE)) && rlc-cloud-repos'
 
 test-remote:
-	ssh $(REMOTE_USER)@$(REMOTE_HOST) 'rlc-cloud-repos'
+	@echo "🧪 Running remote integration test on $(REMOTE_HOST)..."
+	scp tests/scripts/test_remote_behavior.sh $(REMOTE_USER)@$(REMOTE_HOST):/tmp/test_remote_behavior.sh
+	ssh $(REMOTE_USER)@$(REMOTE_HOST) 'bash /tmp/test_remote_behavior.sh'
 
 # Testing
 PYTHON ?= python3
