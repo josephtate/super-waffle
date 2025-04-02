@@ -1,47 +1,51 @@
 #!/bin/bash
-set -euo pipefail
 
+set -euo pipefail
 echo "🔬 Starting DNF vars integrity test..."
 
-DNF_VARS_DIR="/etc/dnf/vars"
-BACKUP_DIR="/tmp/dnf-vars-backup"
-VARS=("baseurl1" "baseurl2" "region" "infra" "rltype" "contentdir" "sigcontentdir")
+DNF_VAR_DIR="/etc/dnf/vars"
+CLI="rlc-cloud-repos"
+MISSING=0
 
-# Step 0: Prepare backup of any existing vars
 echo "🧰 Backing up existing DNF vars (if any)..."
-mkdir -p "$BACKUP_DIR"
-for var in "${VARS[@]}"; do
-    if [[ -f "$DNF_VARS_DIR/$var" ]]; then
-        cp "$DNF_VARS_DIR/$var" "$BACKUP_DIR/$var.bak"
-    fi
-done
+declare -A ORIGINAL_VARS
+mkdir -p /tmp/dnf-backup
 
-# Step 1: Run rlc-cloud-repos to regenerate vars
-echo "🚀 Running rlc-cloud-repos to trigger DNF var setup..."
-sudo rm -f "$DNF_VARS_DIR"/*  # simulate clean slate
-sudo rlc-cloud-repos --format url > /tmp/dnf-vars.out
-
-# Step 2: Verify vars were created
-echo "🔍 Verifying that all expected DNF vars were created..."
-MISSING_VARS=0
-for var in "${VARS[@]}"; do
-    if [[ -f "$DNF_VARS_DIR/$var" ]]; then
-        echo "✅ $var found: $(cat "$DNF_VARS_DIR/$var")"
+for var in baseurl1 baseurl2 region infra rltype contentdir sigcontentdir; do
+    path="$DNF_VAR_DIR/$var"
+    if [[ -f "$path" ]]; then
+        sudo cp "$path" "/tmp/dnf-backup/$var"
+        ORIGINAL_VARS["$var"]="yes"
     else
-        echo "❌ $var missing!"
-        ((MISSING_VARS++))
+        ORIGINAL_VARS["$var"]="no"
     fi
 done
 
-# Step 3: Restore previous state (optional)
+echo "🧹 Removing DNF vars to simulate fresh run..."
+sudo rm -f "$DNF_VAR_DIR"/* || true
+
+echo "🚀 Running $CLI with --force to trigger DNF var setup..."
+sudo $CLI --force --format url > /dev/null
+
+echo "🔍 Verifying that all expected DNF vars were created..."
+for var in baseurl1 baseurl2 region infra rltype contentdir sigcontentdir; do
+    val=$(sudo cat "$DNF_VAR_DIR/$var" 2>/dev/null | tr -d '\n')
+    if [[ -n "$val" ]]; then
+        echo "✅ $var found: $val"
+    else
+        echo "❌ $var missing or empty!"
+        ((MISSING+=1))
+    fi
+done
+
 echo "🧼 Restoring original DNF vars (if any)..."
-for var in "${DNF_VARS[@]}"; do
-    backup="${BACKUP_DIR}/${var}"
-    target="${DNF_VARS_DIR}/${var}"
-    if [[ -f "$backup" ]]; then
-        sudo cp "$backup" "$target"
+for var in baseurl1 baseurl2 region infra rltype contentdir sigcontentdir; do
+    if [[ "${ORIGINAL_VARS[$var]}" == "yes" ]]; then
+        sudo cp "/tmp/dnf-backup/$var" "$DNF_VAR_DIR/$var"
+    else
+        sudo rm -f "$DNF_VAR_DIR/$var"
     fi
 done
 
-echo "🎉 DNF var test complete. Missing count: $MISSING_VARS"
-exit $MISSING_VARS
+echo "🎉 DNF var test complete. Missing count: $MISSING"
+exit $MISSING

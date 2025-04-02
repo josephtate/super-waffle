@@ -27,27 +27,44 @@ logger = logging.getLogger(__name__)
 
 
 def _write_dnf_var(name: str, value: str):
-    """Writes or updates a DNF variable, backing up existing and respecting read-only files."""
+    """
+    Creates or updates a DNF variable file with a given value.
+
+    - If the file does not exist, it is created with the specified value.
+    - If the file exists and contains a different value, it is backed up
+      (appending '.bak') before being overwritten.
+    - If the file already contains the desired value, no action is taken.
+
+    Args:
+        name (str): Name of the DNF variable (e.g., 'region', 'baseurl1').
+        value (str): Value to set for the DNF variable.
+
+    Side Effects:
+        - Writes to /etc/dnf/vars/
+        - Creates .bak files for existing values that are changed
+        - Logs all operations
+    """
     path = DNF_VARS_DIR / name
-    backup = path.with_suffix(".bak")
+
+    # Ensure /etc/dnf/vars exists
+    DNF_VARS_DIR.mkdir(parents=True, exist_ok=True)
+
+    # Check if exists and content differs
+    if path.exists():
+        current_value = path.read_text().strip()
+        if current_value == value:
+            logger.debug(f"DNF var '{name}' already set correctly.")
+            return
+        # Backup
+        backup_path = path.with_suffix(path.suffix + BACKUP_SUFFIX)
+        path.rename(backup_path)
+        logger.info(f"Backed up existing DNF var '{name}' to '{backup_path.name}'")
 
     try:
-        # Create parent directory if needed
-        DNF_VARS_DIR.mkdir(parents=True, exist_ok=True)
-
-        # If file exists and is writable, backup and overwrite
-        if path.exists():
-            if not os.access(path, os.W_OK):
-                logger.warning("Cannot write to DNF var '%s' (read-only), skipping", name)
-                return
-            path.rename(backup)
-            logger.info("Backed up existing var '%s' to '%s'", name, backup)
-
         path.write_text(f"{value}\n")
-        logger.info("Set DNF var '%s' = '%s'", name, value)
-
+        logger.info(f"Wrote DNF var '{name}': {value}")
     except Exception as e:
-        logger.error("Failed to write DNF var '%s': %s", name, e)
+        logger.error(f"Cannot write to DNF var '{name}' ({e}), skipping")
 
 
 def _parse_rocky_release() -> str:

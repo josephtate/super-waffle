@@ -63,7 +63,6 @@ def main() -> int:
     and writes repo files if requested.
     """
     setup_logging()
-    check_touchfile()
 
     parser = argparse.ArgumentParser(
         description="RLC Cloud Repo Resolver",
@@ -79,7 +78,16 @@ def main() -> int:
         const=DEFAULT_OUTPUT_PATH,
         help="Write .repo file to disk (default: /etc/yum.repos.d/rlc-depot.repo)"
     )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Override marker file precondition (force full execution)"
+    )
     args = parser.parse_args()
+
+    # PRECONDITION CHECK: Ensure the marker file is not present otherwise exit; 
+    if not args.force:
+        check_touchfile()
 
     # Step 1: Detect or override cloud/region
     metadata: CloudMetadata = get_cloud_metadata()
