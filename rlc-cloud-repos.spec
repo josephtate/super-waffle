@@ -6,8 +6,6 @@ Summary:        Cloud-aware repo autoconfiguration
 License:        MIT
 URL:            https://ciq.com/
 Source0:        %{name}-%{version}.tar.gz
-Source1:        rlc-cloud-repos-wrapper.sh
-Source2:        99-rlc-cloud-repos.cfg
 
 BuildArch:      noarch
 BuildRequires:  python3-devel
@@ -32,13 +30,11 @@ Designed for first-boot automation using cloud metadata and geolocation-based mi
 %pyproject_wheel
 
 %install
+install -d %{buildroot}/%{_bindir}
+install -Dm0755 src/rlc_cloud_repos/scripts/rlc-cloud-repos-wrapper.sh %{buildroot}/usr/libexec/rlc-cloud-repos-hook.sh
+install -Dm0644 src/rlc_cloud_repos/scripts/99-rlc-cloud-repos.cfg %{buildroot}/etc/cloud/cloud.cfg.d/99-rlc-cloud-repos.cfg
+install -Dm0644 src/rlc_cloud_repos/data/ciq-mirrors.yaml %{buildroot}/etc/rlc-cloud-repos/ciq-mirrors.yaml
 %pyproject_install
-
-# Copy ciq-mirrors.yaml system-wide
-mkdir -p %{buildroot}/etc/rlc-cloud-repos
-install -m 644 %{buildroot}%{python3_sitelib}/rlc_cloud_repos/data/ciq-mirrors.yaml %{buildroot}/etc/rlc-cloud-repos/ciq-mirrors.yaml
-install -Dm0755 %{SOURCE1} %{buildroot}/usr/libexec/rlc-cloud-repos-hook.sh
-install -Dm0644 %{SOURCE2} %{buildroot}/etc/cloud/cloud.cfg.d/99-rlc-cloud-repos.cfg
 
 %files
 %{_bindir}/rlc-cloud-repos
