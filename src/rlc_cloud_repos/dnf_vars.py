@@ -15,6 +15,7 @@ Variables Managed:
 - sigcontentdir: SIG-specific content path (typically 'pub/sig')
 """
 
+import os
 import logging
 import re
 from pathlib import Path
@@ -74,7 +75,10 @@ def ensure_all_dnf_vars(metadata: CloudMetadata, mirror_url: str):
     """
     # Base mirrors
     _write_dnf_var("baseurl1", mirror_url)
-    _write_dnf_var("baseurl2", mirror_url.rsplit(".", 1)[0] + ".prod.ciqws.com")
+    _write_dnf_var("baseurl2", "https://depot.prod.ciqws.com")
+    # _write_dnf_var("baseurl2", mirror_url.rsplit(".", 1)[0] + ".prod.ciqws.com")
+    # ^ buggy, but may need to revise later depending on fallback repo definitions/needs; 
+    # ^ bug fix is s/.prod.ciqws//' in replacement tail string;
 
     # Region and cloud type
     _write_dnf_var("region", metadata.region or "unknown")

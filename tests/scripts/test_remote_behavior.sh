@@ -1,5 +1,4 @@
 #!/bin/bash
-
 set -euo pipefail
 
 echo "📦 Starting remote integration test..."
@@ -8,6 +7,23 @@ MARKERFILE="/etc/rlc-cloud-repos/.configured"
 REPOFILE="/etc/yum.repos.d/rlc-depot.repo"
 SYSLOG_TAG="rlc-cloud-repos"
 CLI="rlc-cloud-repos"
+
+# --- Save original state ---
+if sudo test -f "$MARKERFILE"; then
+    echo "📦 Marker file was pre-existing, backing up..."
+    sudo cp "$MARKERFILE" /tmp/orig_marker_backup
+    MARKER_WAS_PRESENT=true
+else
+    MARKER_WAS_PRESENT=false
+fi
+
+if sudo test -f "$REPOFILE"; then
+    echo "📦 Repo file was pre-existing, backing up..."
+    sudo cp "$REPOFILE" /tmp/orig_repo_backup
+    REPO_WAS_PRESENT=true
+else
+    REPO_WAS_PRESENT=false
+fi
 
 # Clean up from previous runs
 echo "🧹 Cleaning up marker + repo file..."
@@ -27,7 +43,7 @@ else
     exit 1
 fi
 
-# Check touchfile
+# Check marker logic
 echo "🧪 Checking marker file state..."
 if sudo test -f "$MARKERFILE"; then
     echo "📌 Marker file exists, testing early exit logic..."
@@ -47,7 +63,7 @@ if sudo test -f "$MARKERFILE"; then
     grep -q "Wrote repo" /tmp/cli.out && echo "✅ Repo rewritten after marker removal"
 else
     echo "📎 Marker file not present; testing creation flow..."
-    
+
     echo "📥 Creating marker manually..."
     sudo touch "$MARKERFILE"
     sudo rm -f "$REPOFILE"
@@ -61,12 +77,28 @@ else
     grep -q "Wrote repo" /tmp/cli.out && echo "✅ CLI created repo on clean run"
 fi
 
-echo "🧼 Restoring test state (removing marker + repo file)..."
+# --- Restore prior state ---
+echo "🧼 Restoring test state..."
+
 sudo rm -f "$MARKERFILE" "$REPOFILE"
+
+if $MARKER_WAS_PRESENT && sudo test -f /tmp/orig_marker_backup; then
+    echo "♻️ Restoring original marker file..."
+    sudo mv /tmp/orig_marker_backup "$MARKERFILE"
+else
+    echo "🧹 No original marker file to restore."
+fi
+
+if $REPO_WAS_PRESENT && sudo test -f /tmp/orig_repo_backup; then
+    echo "♻️ Restoring original repo file..."
+    sudo mv /tmp/orig_repo_backup "$REPOFILE"
+else
+    echo "🧹 No original repo file to restore."
+fi
 
 echo "🎉 Remote marker file tests complete!"
 
-# Check syslog entries (may not be available in container/minimal systems)
+# Check syslog entries
 echo "🔍 Checking journal for syslog entries..."
 if sudo journalctl -t "$SYSLOG_TAG" --since "5 minutes ago" | grep -q "$CLI"; then
     echo "✅ Syslog entry found for tag '$SYSLOG_TAG'"

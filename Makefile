@@ -53,7 +53,7 @@ publish:
 	@echo "📦 Publishing latest RPM to $(REMOTE_USER)@$(REMOTE_HOST):$(REMOTE_PATH)"
 	scp /home/jhanger/rpmbuild/RPMS/noarch/rlc-cloud-repos-0.1.0-1.el9.noarch.rpm ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_PATH}
 	ssh $(REMOTE_USER)@$(REMOTE_HOST) 'sudo rpm -e rlc-cloud-repos || true'
-	ssh $(REMOTE_USER)@$(REMOTE_HOST) 'sudo rpm -Uvh --nodeps $(notdir $(RPM_FILE)) && rlc-cloud-repos'
+	ssh $(REMOTE_USER)@$(REMOTE_HOST) 'sudo rpm -Uvh --nodeps $(notdir $(RPM_FILE)) && sudo rlc-cloud-repos'
 
 test-remote-cli:
 	@echo "🧪 Running remote integration test on $(REMOTE_HOST)..."
