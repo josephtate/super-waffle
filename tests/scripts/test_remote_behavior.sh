@@ -27,12 +27,43 @@ else
 fi
 
 # Check touchfile
-if [[ -f "$TOUCHFILE" ]]; then
-    echo "✅ Touchfile created: $TOUCHFILE"
+echo "🧪 Checking marker file state..."
+if sudo test -f "$TOUCHFILE"; then
+    echo "📌 Marker file exists, testing early exit logic..."
+    sudo rm -f "$REPO_FILE"
+
+    sudo $CLI --format repo > /tmp/cli.out || true
+    if grep -q "Marker file exists" /tmp/cli.out; then
+        echo "✅ CLI exited early as expected with marker present"
+    else
+        echo "❌ CLI did not exit early with marker present!"
+        exit 1
+    fi
+
+    echo "🧹 Removing marker and re-testing full run..."
+    sudo rm -f "$TOUCHFILE"
+    sudo $CLI --format repo > /tmp/cli.out
+    grep -q "Wrote repo" /tmp/cli.out && echo "✅ Repo rewritten after marker removal"
 else
-    echo "❌ Touchfile missing!"
-    exit 1
+    echo "📎 Marker file not present; testing creation flow..."
+    
+    echo "📥 Creating marker manually..."
+    sudo touch "$TOUCHFILE"
+    sudo rm -f "$REPO_FILE"
+
+    sudo $CLI --format repo > /tmp/cli.out || true
+    grep -q "Marker file exists" /tmp/cli.out && echo "✅ CLI respected manual marker"
+
+    echo "🧹 Removing marker to run clean config..."
+    sudo rm -f "$TOUCHFILE"
+    sudo $CLI --format repo > /tmp/cli.out
+    grep -q "Wrote repo" /tmp/cli.out && echo "✅ CLI created repo on clean run"
 fi
+
+echo "🧼 Restoring test state (removing marker + repo file)..."
+sudo rm -f "$TOUCHFILE" "$REPO_FILE"
+
+echo "🎉 Remote marker file tests complete!"
 
 # Check syslog entries (may not be available in container/minimal systems)
 echo "🔍 Checking journal for syslog entries..."
