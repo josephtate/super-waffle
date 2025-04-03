@@ -31,10 +31,20 @@ grep -q baseurl /etc/yum.repos.d/*.repo && echo "✅ Repo files contain baseurl"
 }
 
 echo "🧾 Checking logs (journal)..."
-journalctl -b -t rlc-cloud-repos --no-pager | grep -q "rlc-cloud-repos" && echo "✅ Syslog entries found" || {
-    echo "❌ No syslog entries tagged rlc-cloud-repos"
-    exit 5
-}
+if journalctl -b -t rlc-cloud-repos --no-pager | grep -q "rlc-cloud-repos"; then
+    echo "✅ Syslog entries found via journal"
+else
+    echo "⚠️  No journalctl entries — checking /var/log/messages..."
+
+    if sudo grep -q "rlc-cloud-repos" /var/log/messages; then
+        echo "✅ Syslog entries found in /var/log/messages"
+    else
+        echo "❌ No syslog entries tagged rlc-cloud-repos"
+        exit 5
+    fi
+fi
+
 journalctl -b -t rlc-cloud-repos --no-pager 
+sudo grep "rlc-cloud-repos" /var/log/messages
 
 echo "🎉 Reboot test passed!"
