@@ -55,11 +55,6 @@ The system is designed as **modular components** that work together to **detect 
 | Configure Repo Files      |
 | (/etc/yum.repos.d/)       |
 +---------------------------+
-           |
-           v
-+---------------------------+
-| Persist Configs & Reboot  |
-+---------------------------+
 ```
 
 ---
