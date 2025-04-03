@@ -65,6 +65,11 @@ test-remote-dnf:
 	scp tests/scripts/test_dnf_vars_behavior.sh $(REMOTE_HOST):/tmp/test_dnf_vars_behavior.sh
 	ssh $(REMOTE_HOST) 'bash /tmp/test_dnf_vars_behavior.sh'
 
+test-remote-reboot:
+	@echo "🔁 Validating post-reboot behavior..."
+	scp tests/scripts/test_remote_reboot.sh $(REMOTE_HOST):/tmp/test_remote_reboot.sh
+	ssh $(REMOTE_HOST) 'bash /tmp/test_remote_reboot.sh'
+
 test-remote: test-remote-cli test-remote-dnf
 
 # Testing
