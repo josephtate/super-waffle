@@ -24,7 +24,7 @@ from rlc_cloud_repos.dnf_vars import ensure_all_dnf_vars
 from rlc_cloud_repos.repo_config import (
     load_mirror_map,
     select_mirror,
-    build_repo_config,
+    install_default_repo_file,
 )
 
 DEFAULT_MIRROR_PATH = "/etc/rlc-cloud-repos/ciq-mirrors.yaml"
@@ -112,11 +112,7 @@ def main() -> int:
     if args.format == "url":
         log_and_print("info", mirror_url)
     else:
-        config = build_repo_config(metadata, mirror_url)
-        lines = ["[base]"]
-        for key, val in config.items("base"):
-            lines.append(f"{key}={val}")
-        repo_text = "\n".join(lines)
+        install_default_repo_file()
 
         if args.output:
             output_path = args.output if isinstance(args.output, str) else DEFAULT_OUTPUT_PATH

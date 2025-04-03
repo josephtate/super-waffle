@@ -34,6 +34,7 @@ install -d %{buildroot}/%{_bindir}
 install -Dm0755 src/rlc_cloud_repos/scripts/rlc-cloud-repos-wrapper.sh %{buildroot}/usr/libexec/rlc-cloud-repos-hook.sh
 install -Dm0644 src/rlc_cloud_repos/scripts/99-rlc-cloud-repos.cfg %{buildroot}/etc/cloud/cloud.cfg.d/99-rlc-cloud-repos.cfg
 install -Dm0644 src/rlc_cloud_repos/data/ciq-mirrors.yaml %{buildroot}/etc/rlc-cloud-repos/ciq-mirrors.yaml
+install -Dm0644 src/rlc_cloud_repos/data/ciq-depot.repo %{buildroot}/etc/rlc-cloud-repos/ciq-depot.repo
 %pyproject_install
 
 %files
@@ -43,6 +44,7 @@ install -Dm0644 src/rlc_cloud_repos/data/ciq-mirrors.yaml %{buildroot}/etc/rlc-c
 %{python3_sitelib}/rlc_cloud_repos
 %{python3_sitelib}/rlc_cloud_repos-*.dist-info
 %config(noreplace) /etc/rlc-cloud-repos/ciq-mirrors.yaml
+%config(noreplace) /etc/rlc-cloud-repos/ciq-depot.repo
 %config(noreplace) /etc/cloud/cloud.cfg.d/99-rlc-cloud-repos.cfg
 /usr/libexec/rlc-cloud-repos-hook.sh
 

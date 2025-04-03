@@ -14,7 +14,7 @@ import builtins
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 from rlc_cloud_repos.cloud_metadata import get_cloud_metadata, CloudMetadata, _query_cloud_init_fallback
-from rlc_cloud_repos.repo_config import load_mirror_map, select_mirror, build_repo_config
+from rlc_cloud_repos.repo_config import load_mirror_map, select_mirror, install_default_repo_file
 from rlc_cloud_repos.dnf_vars import ensure_all_dnf_vars, BACKUP_SUFFIX
 from rlc_cloud_repos.log_utils import log_and_print
 
@@ -50,9 +50,23 @@ def test_cloud_metadata_and_mirror(monkeypatch, fixture_name, expected_provider,
     mirror_url = select_mirror(metadata, mirror_map)
     assert mirror_url.startswith("https://")
 
-    repo_config = build_repo_config(metadata, mirror_url)
-    assert repo_config.has_option("base", "baseurl")
-    assert "$releasever" in repo_config["base"]["baseurl"]
+
+def test_install_default_repo_file(monkeypatch, tmp_path):
+    """
+    Ensure the default repo template is correctly copied into /etc/yum.repos.d/
+    with expected DNF variable placeholders and structure.
+    """
+    test_template = FIXTURES_DIR / "ciq-depot.repo"
+    test_output = tmp_path / "ciq-depot.repo"
+
+    install_default_repo_file(template_path=test_template, dest_path=test_output)
+
+    assert test_output.exists()
+    content = test_output.read_text()
+    assert "baseurl" in content
+    assert "${baseurl1}" in content
+    assert "$releasever" in content
+
 
 
 def test_marker_file_respected(monkeypatch, tmp_path):

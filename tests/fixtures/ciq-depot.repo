@@ -1,0 +1,91 @@
+# Upstream Repos
+[rocky-extras-$releasever.$basearch]
+name = Rocky Linux $releasever Extras ($basearch)
+baseurl = ${baseurl1}/public/files/upstream-$releasever/rocky-extras-$releasever.$basearch,${baseurl2}/public/files/upstream-$releasever/rocky-extras-$releasever.$basearch
+gpgkey = https://dl.rockylinux.org/pub/rocky/RPM-GPG-KEY-Rocky-$releasever
+priority = 50
+gpgcheck = true
+enabled = true
+
+[rocky-baseos-$releasever.$basearch]
+name = Rocky Linux $releasever BaseOS ($basearch)
+baseurl = ${baseurl1}/public/files/upstream-$releasever/rocky-baseos-$releasever.$basearch,${baseurl2}/public/files/upstream-$releasever/rocky-baseos-$releasever.$basearch
+gpgkey = https://dl.rockylinux.org/pub/rocky/RPM-GPG-KEY-Rocky-$releasever
+priority = 50
+gpgcheck = true
+enabled = true
+#exclude = kernel*
+
+[rocky-appstream-$releasever.$basearch]
+name = Rocky Linux $releasever AppStream ($basearch)
+baseurl = ${baseurl1}/public/files/upstream-$releasever/rocky-appstream-$releasever.$basearch,${baseurl2}/public/files/upstream-$releasever/rocky-appstream-$releasever.$basearch
+gpgkey = https://dl.rockylinux.org/pub/rocky/RPM-GPG-KEY-Rocky-$releasever
+priority = 50
+gpgcheck = true
+enabled = true
+
+# Source Repos
+[rocky-baseos-$releasever.$basearch-source]
+name = Rocky Linux $releasever BaseOS (source)
+baseurl = ${baseurl1}/public/files/upstream-$releasever/rocky-baseos-$releasever.source,${baseurl2}/public/files/upstream-$releasever/rocky-baseos-$releasever.source
+gpgkey = https://dl.rockylinux.org/pub/rocky/RPM-GPG-KEY-Rocky-$releasever
+priority = 50
+gpgcheck = true
+enabled = false
+
+[rocky-appstream-$releasever.$basearch-source]
+name = Rocky Linux $releasever AppStream (source)
+baseurl = ${baseurl1}/public/files/upstream-$releasever/rocky-appstream-$releasever.source,${baseurl2}/public/files/upstream-$releasever/rocky-appstream-$releasever.source
+gpgkey = https://dl.rockylinux.org/pub/rocky/RPM-GPG-KEY-Rocky-$releasever
+priority = 50
+gpgcheck = true
+enabled = false
+
+[rocky-extras-$releasever.$basearch-source]
+name = Rocky Linux $releasever Extras (source)
+baseurl = ${baseurl1}/public/files/upstream-$releasever/rocky-extras-$releasever.source,${baseurl2}/public/files/upstream-$releasever/rocky-extras-$releasever.source
+gpgkey = https://dl.rockylinux.org/pub/rocky/RPM-GPG-KEY-Rocky-$releasever
+priority = 50
+gpgcheck = true
+enabled = false
+
+# CIQ Addon Repos
+[dkms-$releasever.$basearch]
+name = DKMS $releasever ($basearch)
+baseurl = ${baseurl1}/public/files/upstream-$releasever/epel-$releasever.$basearch,${baseurl2}/public/files/upstream-$releasever/epel-$releasever.$basearch
+gpgkey = https://download-cc-rdu01.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-$releasever
+priority = 50
+gpgcheck = true
+enabled = 0
+
+[ciq-extras-$releasever.$basearch]
+name = CIQ Extras for Rocky Linux $releasever ($basearch)
+baseurl = ${baseurl1}/public/files/upstream-$releasever/ciq-extras-$releasever.$basearch,${baseurl2}/public/files/upstream-$releasever/ciq-extras-$releasever.$basearch
+gpgkey = https://ciq.com/keys/rpm-gpg-key-ciq
+priority = 50
+gpgcheck = true
+enabled = true
+
+[ciq-aws-ws-extras.noarch]
+name = CIQ AWS Workspaces Extras
+baseurl = ${baseurl1}/public/files/upstream-$releasever/aws-workspace-ciq-extras.noarch,${baseurl2}/public/files/upstream-$releasever/aws-workspace-ciq-extras.noarch
+gpgcheck = false
+enabled = 0
+priority = 50
+
+# Sources
+[dkms-$releasever.$basearch-source]
+name = DKMS $releasever (source)
+baseurl = ${baseurl1}/public/files/upstream-$releasever/epel-$releasever.source,${baseurl2}/public/files/upstream-$releasever/epel-$releasever.source
+gpgkey = https://download-cc-rdu01.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-$releasever
+priority = 50
+gpgcheck = true
+enabled = false
+
+[ciq-extras-$releasever.$basearch-source]
+name = CIQ Extras for Rocky Linux $releasever (source)
+baseurl = ${baseurl1}/public/files/upstream-$releasever/ciq-extras-$releasever.source,${baseurl2}/public/files/upstream-$releasever/ciq-extras-$releasever.source
+gpgkey = https://ciq.com/keys/rpm-gpg-key-ciq
+priority = 50
+gpgcheck = true
+enabled = false

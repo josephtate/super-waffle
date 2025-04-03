@@ -4,8 +4,11 @@ import logging
 import os
 import yaml
 from pathlib import Path
+from shutil import copyfile
+from pathlib import Path
 from typing import Any, Optional
 from rlc_cloud_repos.cloud_metadata import CloudMetadata
+from rlc_cloud_repos.log_utils import log_and_print
 
 logger = logging.getLogger(__name__)
 
@@ -85,6 +88,35 @@ def select_mirror(metadata: CloudMetadata, mirror_map: dict[str, Any]) -> str:
     raise ValueError(f"No mirror found for provider={provider}, region={region}")
 
 
+def install_default_repo_file(
+    template_path: Path = Path("/etc/rlc-cloud-repos/ciq-depot.repo"),
+    dest_path: Path = Path("/etc/yum.repos.d/ciq-depot.repo")
+):
+    """
+    Installs the default CIQ repo file into /etc/yum.repos.d/.
+    If one exists, backs it up. Uses static template from /etc/rlc-cloud-repos/.
+    
+    Args:
+        template_path (Path): Source repo file template (default system location)
+        dest_path (Path): Destination .repo path (default yum.repos.d)
+    """
+    backup_path = dest_path.with_suffix(dest_path.suffix + ".bak")
+
+    if not template_path.exists():
+        log_and_print(f"❌ Missing default repo template at {template_path}", level="error")
+        return
+
+    if dest_path.exists():
+        log_and_print(f"🛑 Repo file already exists: {dest_path}, backing up to {backup_path}")
+        copyfile(dest_path, backup_path)
+    else:
+        log_and_print(f"✅ No existing repo found. Proceeding to install {dest_path}")
+
+    copyfile(template_path, dest_path)
+    log_and_print(f"📦 Installed default repo file to {dest_path}")
+
+
+# DEPRECTATED: Remove after refactoring
 def build_repo_config(metadata: CloudMetadata, mirror_url: str) -> configparser.ConfigParser:
     """
     Constructs a YUM repo config object using the mirror URL.
