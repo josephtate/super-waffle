@@ -2,42 +2,34 @@
 """
 RLC Cloud Repo Resolver CLI
 
-This tool detects the cloud provider and region, selects the appropriate
-CIQ repository mirror, and optionally writes a .repo configuration file
-to /etc/yum.repos.d.
-
-Supports AWS, Azure, GCP, Oracle with override options.
+This tool detects the cloud provider and region via cloud-init,
+selects the appropriate CIQ repository mirror, and writes DNF vars
+for optimized regional repo access.
 
 Author: Joel Hanger
 Created: 2025-03
 License: CIQ Proprietary
 """
+
 import argparse
 import logging
-import logging.handlers
 import sys
 import os
 from datetime import datetime
-from rlc_cloud_repos.cloud_metadata import get_cloud_metadata, CloudMetadata
+
+from rlc_cloud_repos.cloud_metadata import get_cloud_metadata
 from rlc_cloud_repos.log_utils import setup_logging, log_and_print, logger
 from rlc_cloud_repos.dnf_vars import ensure_all_dnf_vars
-from rlc_cloud_repos.repo_config import (
-    load_mirror_map,
-    select_mirror,
-    install_default_repo_file,
-)
+from rlc_cloud_repos.repo_config import load_mirror_map, select_mirror
 
 DEFAULT_MIRROR_PATH = "/etc/rlc-cloud-repos/ciq-mirrors.yaml"
-DEFAULT_OUTPUT_PATH = "/etc/yum.repos.d/rlc-depot.repo"
 MARKERFILE = "/etc/rlc-cloud-repos/.configured"
 
 
 def check_touchfile() -> None:
     """
     Exit early if the system has already been configured.
-
-    Creates an idempotent barrier to prevent re-running this tool
-    automatically after successful configuration.
+    Creates an idempotent barrier to prevent re-running this tool.
     """
     if os.path.exists(MARKERFILE):
         log_and_print(f"Marker file exists ({MARKERFILE}). Skipping repo update.")
@@ -47,8 +39,7 @@ def check_touchfile() -> None:
 def write_touchfile() -> None:
     """
     Create a touchfile to indicate configuration was completed.
-
-    This prevents the repo from being configured more than once automatically.
+    Prevents automatic reruns on reboot (cloud-init idempotency).
     """
     os.makedirs(os.path.dirname(MARKERFILE), exist_ok=True)
     with open(MARKERFILE, "w") as f:
@@ -57,10 +48,7 @@ def write_touchfile() -> None:
 
 def main() -> int:
     """
-    Entry point for the CLI utility.
-
-    Parses CLI args, performs metadata detection, resolves repo mirrors,
-    and writes repo files if requested.
+    Entry point for RLC cloud repo resolver.
     """
     setup_logging()
 
@@ -68,67 +56,33 @@ def main() -> int:
         description="RLC Cloud Repo Resolver",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
-    parser.add_argument("--cloud", help="Override detected cloud", choices=["aws", "azure", "gcp", "oracle"])
-    parser.add_argument("--region", help="Override detected region")
-    parser.add_argument("--format", choices=["url", "repo"], default="url", help="Output format")
-    parser.add_argument("--mirror-file", help="Path to mirror YAML override")
-    parser.add_argument(
-        "--output",
-        nargs="?",
-        const=DEFAULT_OUTPUT_PATH,
-        help="Write .repo file to disk (default: /etc/yum.repos.d/rlc-depot.repo)"
-    )
-    parser.add_argument(
-        "--force",
-        action="store_true",
-        help="Override marker file precondition (force full execution)"
-    )
+    parser.add_argument("--mirror-file", help="Override path to mirror map YAML")
+    parser.add_argument("--force", action="store_true", help="Force reconfiguration (ignore marker file)")
     args = parser.parse_args()
 
-    # PRECONDITION CHECK: Ensure the marker file is not present otherwise exit; 
     if not args.force:
         check_touchfile()
 
-    # Step 1: Detect or override cloud/region
-    metadata: CloudMetadata = get_cloud_metadata()
-    log_and_print(f"Using cloud metadata: provider={metadata.provider}, region={metadata.region}")
-    if args.cloud:
-        metadata.provider = args.cloud
-    if args.region:
-        metadata.region = args.region
+    # Detect provider + region via cloud-init query
+    metadata = get_cloud_metadata()
+    provider = metadata["provider"]
+    region = metadata["region"]
+    log_and_print(f"Using cloud metadata: provider={provider}, region={region}")
 
-    # Step 2: Load mirror map and select appropriate URL
+    # Load mirror map + resolve appropriate URL
     mirror_file_path = args.mirror_file or DEFAULT_MIRROR_PATH
     mirror_map = load_mirror_map(mirror_file_path)
     log_and_print(f"Loaded mirror map from {mirror_file_path}")
-    mirror_url = select_mirror(metadata, mirror_map)
+    mirror_url = select_mirror({"provider": provider, "region": region}, mirror_map)
     log_and_print(f"Selected mirror URL: {mirror_url}")
 
-    # Step 3: Ensure all DNF variables are set
-    ensure_all_dnf_vars(metadata, mirror_url)
-    logger.info("DNF vars set for region=%s and mirror=%s", metadata.region, mirror_url)
-    
-    # Step 4: Output repo URL or generate .repo file
-    if args.format == "url":
-        log_and_print("info", mirror_url)
-    else:
-        install_default_repo_file()
+    # Set DNF vars
+    ensure_all_dnf_vars({"provider": provider, "region": region}, mirror_url)
+    logger.info("DNF vars set for region=%s and mirror=%s", region, mirror_url)
 
-        if args.output:
-            output_path = args.output if isinstance(args.output, str) else DEFAULT_OUTPUT_PATH
-            try:
-                with open(output_path, "w") as f:
-                    f.write(repo_text + "\n")
-                log_and_print("info", f"Wrote repo to {output_path}")
-                write_touchfile()
-                log_and_print(f"Marker file written to {MARKERFILE}")
-            except Exception as e:
-                log_and_print("error", f"❌ Failed to write repo file: {e}")
-                return 1
-        else:
-            log_and_print("info", repo_text)
-            write_touchfile()
-            log_and_print(f"Marker file written to {MARKERFILE}")
+    # Create marker file to prevent future reruns
+    write_touchfile()
+    log_and_print(f"Marker file written to {MARKERFILE}")
 
     return 0
 

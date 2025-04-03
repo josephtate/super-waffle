@@ -10,16 +10,10 @@ Variables Managed:
 - baseurl2: Global fallback mirror
 - region: Cloud region
 - infra: Infrastructure type (e.g., ec2, azure)
-- rltype: Rocky Linux release type (rl8, rl9, etc.)
-- contentdir: Base content directory (typically 'pub/rocky')
-- sigcontentdir: SIG-specific content path (typically 'pub/sig')
 """
 
-import os
 import logging
-import re
 from pathlib import Path
-from rlc_cloud_repos.cloud_metadata import CloudMetadata
 
 DNF_VARS_DIR = Path("/etc/dnf/vars")
 BACKUP_SUFFIX = ".bak"
@@ -68,22 +62,7 @@ def _write_dnf_var(name: str, value: str):
         logger.error(f"Cannot write to DNF var '{name}' ({e}), skipping")
 
 
-def _parse_rocky_release() -> str:
-    """
-    Determines the Rocky Linux release type from /etc/rocky-release.
-
-    Returns:
-        str: e.g., 'rl9' or 'rl8'
-    """
-    rocky_file = Path("/etc/rocky-release")
-    if not rocky_file.exists():
-        return "rl-unknown"
-
-    match = re.search(r"Rocky Linux release (\d+)", rocky_file.read_text())
-    return f"rl{match.group(1)}" if match else "rl-unknown"
-
-
-def ensure_all_dnf_vars(metadata: CloudMetadata, mirror_url: str):
+def ensure_all_dnf_vars(metadata: dict[str, str], mirror_url: str):
     """
     Sets required DNF variables for building repo baseurls.
 
@@ -94,15 +73,5 @@ def ensure_all_dnf_vars(metadata: CloudMetadata, mirror_url: str):
     # Base mirrors
     _write_dnf_var("baseurl1", mirror_url)
     _write_dnf_var("baseurl2", "https://depot.prod.ciqws.com")
-    # _write_dnf_var("baseurl2", mirror_url.rsplit(".", 1)[0] + ".prod.ciqws.com")
-    # ^ buggy, but may need to revise later depending on fallback repo definitions/needs; 
-    # ^ bug fix is s/.prod.ciqws//' in replacement tail string;
-
-    # Region and cloud type
     _write_dnf_var("region", metadata.region or "unknown")
     _write_dnf_var("infra", metadata.provider or "unknown")
-
-    # Rocky release and layout
-    _write_dnf_var("rltype", _parse_rocky_release())
-    _write_dnf_var("contentdir", "pub/rocky")
-    _write_dnf_var("sigcontentdir", "pub/sig")
