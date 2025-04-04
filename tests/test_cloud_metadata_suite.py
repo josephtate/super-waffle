@@ -47,8 +47,9 @@ def test_cloud_metadata_and_mirror(monkeypatch, expected_provider, expected_regi
     assert metadata["region"] == expected_region
 
     mirror_map = load_mirror_map()
-    mirror_url = select_mirror(metadata, mirror_map)
-    assert mirror_url.startswith("https://")
+    primary, backup = select_mirror(metadata, mirror_map)
+    assert primary.startswith("https://")
+    assert isinstance(backup, str)
 
 
 def test_marker_file_respected(monkeypatch, tmp_path):
@@ -78,9 +79,8 @@ def test_dnf_vars_creation_and_backup(monkeypatch, tmp_path):
 
     metadata = get_cloud_metadata()
     mirror_map = load_mirror_map()
-    mirror_url = select_mirror(metadata, mirror_map)
-
-    ensure_all_dnf_vars(metadata, mirror_url)
+    primary, backup = select_mirror(metadata, mirror_map)
+    ensure_all_dnf_vars(primary, backup)
 
     for var in ["baseurl1", "baseurl2"]:
         assert (var_dir / var).exists()
