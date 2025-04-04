@@ -5,10 +5,6 @@ RLC Cloud Repo Resolver CLI
 This tool detects the cloud provider and region via cloud-init,
 selects the appropriate CIQ repository mirror, and writes DNF vars
 for optimized regional repo access.
-
-Author: Joel Hanger
-Created: 2025-03
-License: CIQ Proprietary
 """
 
 import argparse
