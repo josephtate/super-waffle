@@ -16,7 +16,6 @@ BuildRequires:  pyproject-rpm-macros
 
 Requires:       python3
 Requires:       pyyaml
-Requires:       ruamel.yaml
 Requires:       cloud-init
 
 %description

@@ -61,14 +61,13 @@ def _write_dnf_var(name: str, value: str):
         logger.error(f"Cannot write to DNF var '{name}' ({e}), skipping")
 
 
-def ensure_all_dnf_vars(metadata: dict[str, str], mirror_url: str):
+def ensure_all_dnf_vars(primary_url: str, backup_url: str):
     """
-    Sets required DNF variables for building repo baseurls.
+    Sets DNF variables for the primary and backup mirror URLs.
 
     Args:
-        metadata (dict[str, str]): Cloud provider and region info.
-        mirror_url (str): The selected base mirror URL.
+        primary_url (str): Preferred mirror.
+        backup_url (str): Fallback mirror.
     """
-    # Base mirrors
-    _write_dnf_var("baseurl1", mirror_url)
-    _write_dnf_var("baseurl2", "https://depot.prod.ciqws.com")
+    _write_dnf_var("baseurl1", primary_url)
+    _write_dnf_var("baseurl2", backup_url)

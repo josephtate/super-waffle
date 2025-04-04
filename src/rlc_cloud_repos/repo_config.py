@@ -47,19 +47,12 @@ def load_mirror_map(yaml_path: Optional[str] = None) -> dict[str, Any]:
         raise ValueError(f"Invalid YAML in mirror map: {e}")
 
 
-def select_mirror(metadata: dict[str, str], mirror_map: dict[str, Any]) -> str:
+def select_mirror(metadata: dict[str, str], mirror_map: dict[str, Any]) -> tuple[str, str]:
     """
-    Chooses the best mirror URL for the given cloud metadata.
-
-    Args:
-        metadata (CloudMetadata): Cloud region + provider info.
-        mirror_map (dict): Parsed YAML mirror map.
+    Chooses the best primary and backup mirror URLs for the given cloud metadata.
 
     Returns:
-        str: Selected mirror URL.
-
-    Raises:
-        ValueError: If no usable mirror is found.
+        tuple[str, str]: (primary_url, backup_url)
     """
     provider = metadata["provider"].lower()
     region = metadata["region"]
@@ -67,23 +60,22 @@ def select_mirror(metadata: dict[str, str], mirror_map: dict[str, Any]) -> str:
     logger.info("Selecting mirror for provider=%s, region=%s", provider, region)
 
     provider_map = mirror_map.get(provider, {})
-
     if isinstance(provider_map, dict):
         region_map = provider_map.get(region)
         if isinstance(region_map, dict):
-            return region_map.get("primary") or region_map.get("backup")
+            return region_map.get("primary", ""), region_map.get("backup", "")
 
         default_map = provider_map.get("default")
         if isinstance(default_map, dict):
-            return default_map.get("primary") or default_map.get("backup")
+            return default_map.get("primary", ""), default_map.get("backup", "")
         elif isinstance(default_map, str):
-            return default_map
+            return default_map, ""
 
     fallback = mirror_map.get("default")
     if isinstance(fallback, dict):
-        return fallback.get("primary") or fallback.get("backup")
+        return fallback.get("primary", ""), fallback.get("backup", "")
     elif isinstance(fallback, str):
-        return fallback
+        return fallback, ""
 
     logger.error("No mirror found for provider=%s, region=%s", provider, region)
     raise ValueError(f"No mirror found for provider={provider}, region={region}")

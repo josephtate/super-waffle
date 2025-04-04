@@ -75,12 +75,13 @@ def main() -> int:
     mirror_file_path = args.mirror_file or DEFAULT_MIRROR_PATH
     mirror_map = load_mirror_map(mirror_file_path)
     log_and_print(f"Loaded mirror map from {mirror_file_path}")
-    mirror_url = select_mirror({"provider": provider, "region": region}, mirror_map)
-    log_and_print(f"Selected mirror URL: {mirror_url}")
+
+    primary_url, backup_url = select_mirror({"provider": provider, "region": region}, mirror_map)
+    log_and_print(f"Selected mirror URL: {primary_url}")
 
     # Set DNF vars
-    ensure_all_dnf_vars({"provider": provider, "region": region}, mirror_url)
-    logger.info("DNF vars set for region=%s and mirror=%s", region, mirror_url)
+    ensure_all_dnf_vars(primary_url, backup_url)
+    logger.info("DNF vars set for mirror=%s and backup=%s", primary_url, backup_url)
 
     # Create marker file to prevent future reruns
     write_touchfile()

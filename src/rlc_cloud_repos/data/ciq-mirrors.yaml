@@ -1,6 +1,7 @@
 aws:
   us-east-1:
     primary: https://depot.us-east-1.prod.ciqws.com
+    backup: https://depot.us-east-1.prod.ciqws.com
   us-east-2:
     primary: https://depot.us-east-2.prod.ciqws.com
     backup: https://depot.us-east-1.prod.ciqws.com
