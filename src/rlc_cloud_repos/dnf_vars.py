@@ -67,11 +67,11 @@ def ensure_all_dnf_vars(metadata: dict[str, str], mirror_url: str):
     Sets required DNF variables for building repo baseurls.
 
     Args:
-        metadata (CloudMetadata): Cloud provider and region data.
+        metadata (dict[str, str]): Cloud provider and region info.
         mirror_url (str): The selected base mirror URL.
     """
     # Base mirrors
     _write_dnf_var("baseurl1", mirror_url)
     _write_dnf_var("baseurl2", "https://depot.prod.ciqws.com")
-    _write_dnf_var("region", metadata.region or "unknown")
-    _write_dnf_var("infra", metadata.provider or "unknown")
+    _write_dnf_var("region", metadata.get("region", "unknown"))
+    _write_dnf_var("infra", metadata.get("provider", "unknown"))
