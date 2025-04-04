@@ -189,4 +189,4 @@ mockbuild/
 
 # Local Testing:
 Makefile.local
-scripts/
+./scripts/

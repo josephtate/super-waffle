@@ -171,10 +171,10 @@ This is the active branch for development. Use this to track commits and open PR
     - Prevents re-running config logic if it exists.
     - Created after first successful run.
     - **Removed during RPM upgrades** to allow re-run at next boot.
+
 - **Cloud metadata detection**:
     
-    - Primary: `/run/cloud-init/instance-data.json`
-    - Fallback: cloud metadata service endpoints
+    - Primary: `cloud-init` metadata query. 
 
 - **Repo logic**:
     
@@ -192,7 +192,7 @@ This is the active branch for development. Use this to track commits and open PR
 
 ### 📦 Region Matrix Logic
 
-**Matrix source**: Confluence cloud region → mirror → fallback mapping.
+**Matrix source**: Confluence cloud region → mirror.
 
 We're controlling this via:
 
