@@ -1,0 +1,18 @@
+specfile_path: rpm/rlc-cloud-repos.spec
+downstream_package_name: rlc-cloud-repos
+upstream_package_name: rlc-cloud-repos
+upstream_ref: dev
+create_pr: false
+
+actions:
+  post-upstream-clone: "true" # prevent patch generation
+  create-archive: "true" # skip tarball generation
+
+jobs:
+  - job: build
+    trigger: pull_request
+    targets:
+      - centos-stream-9-x86_64
+
+  - job: propose_downstream
+    trigger: release

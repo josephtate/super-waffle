@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "path/to/your/virtualenv/bin/python",
+    "python.pythonPath": ".venv/bin/python",
     "python.formatting.provider": "black",
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {

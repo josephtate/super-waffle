@@ -82,7 +82,7 @@ def test_dnf_vars_creation_and_backup(monkeypatch, tmp_path):
 
     ensure_all_dnf_vars(metadata, mirror_url)
 
-    for var in ["baseurl1", "baseurl2", "infra", "region"]:
+    for var in ["baseurl1", "baseurl2"]:
         assert (var_dir / var).exists()
 
     assert (var_dir / "baseurl1.bak").exists()

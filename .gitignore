@@ -180,12 +180,12 @@ cython_debug/
 .pre-commit-config.yaml
 .pylintrc
 .editorconfig
-.envrc
+.envrc-local # not using Direnv atm; 
+*.bak
 
 # RPM build artifacts (engineer suggestion)
 *.rpm
 *.srpm
-*.spec
 rpmbuild/
 mockbuild/
 

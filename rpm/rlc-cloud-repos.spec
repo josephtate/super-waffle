@@ -1,0 +1,65 @@
+Name:           rlc-cloud-repos
+Version:        0.1.0
+Release:        2.g8258e1b1.g8258e1b1.g8258e1b1.g8258e1b1.g8258e1b1.g8258e1b1.g8258e1b1.g8258e1b1.g8258e1b1.g8258e1b1.g8258e1b1.g8258e1b1%{?dist}
+Summary:        Cloud-aware repo autoconfiguration
+
+License:        MIT
+URL:            https://ciq.com/
+Source0:        %{name}-%{version}.tar.gz
+
+BuildArch:      noarch
+BuildRequires:  python3-setuptools
+BuildRequires:  python3-devel
+BuildRequires:  python3-pip
+BuildRequires:  python3-wheel
+BuildRequires:  pyproject-rpm-macros
+
+Requires:       python3
+Requires:       pyyaml
+Requires:       ruamel.yaml
+Requires:       cloud-init
+
+%description
+Installs cloud-init-aware repository autoconfiguration for RLC images.
+Designed for first-boot automation using cloud metadata and geolocation-based mirror selection.
+
+%prep
+%setup -q
+ls
+
+%build
+%pyproject_wheel
+
+%install
+%pyproject_install
+install -Dm0644 src/rlc_cloud_repos/scripts/20_rlc-cloud-repos.cfg %{buildroot}/etc/cloud/cloud.cfg.d/20_rlc-cloud-repos.cfg
+install -Dm0644 src/rlc_cloud_repos/data/ciq-mirrors.yaml %{buildroot}/usr/share/rlc-cloud-repos/ciq-mirrors.yaml
+
+%files
+%license LICENSE
+%doc README.md
+
+# CLI entrypoint (pyproject.toml → console_scripts)
+%{_bindir}/rlc-cloud-repos
+
+# Python package content
+%{python3_sitelib}/rlc_cloud_repos
+%{python3_sitelib}/rlc_cloud_repos-*.dist-info
+
+# Config and static data
+%config(noreplace) /etc/cloud/cloud.cfg.d/20_rlc-cloud-repos.cfg
+/usr/share/rlc-cloud-repos/ciq-mirrors.yaml
+
+
+%post
+touch /etc/rlc-cloud-repos/.configured
+
+%postun
+rm -f /etc/rlc-cloud-repos/.configured
+
+%posttrans
+rm -f /etc/rlc-cloud-repos/.configured
+
+%changelog
+* Mon Mar 31 2025 Joel Hanger <jhanger@ciq.com> - 0.1.0-1
+- Initial version of cloud-aware repo autoconfig package

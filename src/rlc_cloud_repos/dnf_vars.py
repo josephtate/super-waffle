@@ -9,7 +9,6 @@ Variables Managed:
 - baseurl1: Primary mirror URL
 - baseurl2: Global fallback mirror
 - region: Cloud region
-- infra: Infrastructure type (e.g., ec2, azure)
 """
 
 import logging
@@ -73,5 +72,3 @@ def ensure_all_dnf_vars(metadata: dict[str, str], mirror_url: str):
     # Base mirrors
     _write_dnf_var("baseurl1", mirror_url)
     _write_dnf_var("baseurl2", "https://depot.prod.ciqws.com")
-    _write_dnf_var("region", metadata.get("region", "unknown"))
-    _write_dnf_var("infra", metadata.get("provider", "unknown"))

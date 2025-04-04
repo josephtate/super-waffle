@@ -14,12 +14,18 @@ import os
 from datetime import datetime
 
 from rlc_cloud_repos.cloud_metadata import get_cloud_metadata
-from rlc_cloud_repos.log_utils import setup_logging, log_and_print, logger
+from rlc_cloud_repos.log_utils import (
+    setup_logging, 
+    log_and_print, 
+    logger
+)
 from rlc_cloud_repos.dnf_vars import ensure_all_dnf_vars
-from rlc_cloud_repos.repo_config import load_mirror_map, select_mirror
-
-DEFAULT_MIRROR_PATH = "/etc/rlc-cloud-repos/ciq-mirrors.yaml"
-MARKERFILE = "/etc/rlc-cloud-repos/.configured"
+from rlc_cloud_repos.repo_config import (
+    load_mirror_map, 
+    select_mirror, 
+    DEFAULT_MIRROR_PATH, 
+    MARKERFILE
+)
 
 
 def check_touchfile() -> None:
