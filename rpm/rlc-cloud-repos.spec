@@ -1,6 +1,6 @@
 Name:           rlc-cloud-repos
 Version:        0.1.0
-Release:        2.g8258e1b1.g8258e1b1.g8258e1b1.g8258e1b1.g8258e1b1.g8258e1b1.g8258e1b1.g8258e1b1.g8258e1b1.g8258e1b1.g8258e1b1.g8258e1b1%{?dist}
+Release:        0
 Summary:        Cloud-aware repo autoconfiguration
 
 License:        MIT

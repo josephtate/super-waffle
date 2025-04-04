@@ -11,7 +11,7 @@ from rlc_cloud_repos.log_utils import log_and_print
 logger = logging.getLogger(__name__)
 
 MARKERFILE = "/etc/rlc-cloud-repos/.configured"
-DEFAULT_MIRROR_PATH = "/etc/rlc-cloud-repos/ciq-mirrors.yaml"
+DEFAULT_MIRROR_PATH = "/usr/share/rlc-cloud-repos/ciq-mirrors.yaml"
 
 
 def load_mirror_map(yaml_path: Optional[str] = None) -> dict[str, Any]:
