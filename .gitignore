@@ -27,6 +27,8 @@ share/python-wheels/
 MANIFEST
 %{buildroot}
 *.zip
+*.tar.gz
+*.rpm
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -189,4 +191,4 @@ mockbuild/
 
 # Local Testing:
 Makefile.local
-./scripts/
+scripts.local
