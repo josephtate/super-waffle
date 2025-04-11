@@ -48,23 +48,10 @@ def write_touchfile() -> None:
         f.write(f"Configured on {datetime.now().isoformat()}\n")
 
 
-def main() -> int:
+def _configure_repos(mirror_file_path: str) -> None:
     """
-    Entry point for RLC cloud repo resolver.
+    Core logic for detecting metadata, selecting mirrors, and configuring DNF vars.
     """
-    setup_logging()
-
-    parser = argparse.ArgumentParser(
-        description="RLC Cloud Repo Resolver",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
-    parser.add_argument("--mirror-file", help="Override path to mirror map YAML")
-    parser.add_argument("--force", action="store_true", help="Force reconfiguration (ignore marker file)")
-    args = parser.parse_args()
-
-    if not args.force:
-        check_touchfile()
-
     # Detect provider + region via cloud-init query
     metadata = get_cloud_metadata()
     provider = metadata["provider"]
@@ -72,7 +59,6 @@ def main() -> int:
     log_and_print(f"Using cloud metadata: provider={provider}, region={region}")
 
     # Load mirror map + resolve appropriate URL
-    mirror_file_path = args.mirror_file or DEFAULT_MIRROR_PATH
     mirror_map = load_mirror_map(mirror_file_path)
     log_and_print(f"Loaded mirror map from {mirror_file_path}")
 
@@ -87,7 +73,32 @@ def main() -> int:
     write_touchfile()
     log_and_print(f"Marker file written to {MARKERFILE}")
 
-    return 0
+
+def main() -> int:
+    """
+    Entry point for RLC cloud repo resolver. Handles argument parsing and
+    calls the core configuration logic.
+    """
+    setup_logging()
+
+    parser = argparse.ArgumentParser(
+        description="RLC Cloud Repo Resolver",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument("--mirror-file", help="Override path to mirror map YAML")
+    parser.add_argument("--force", action="store_true", help="Force reconfiguration (ignore marker file)")
+    args = parser.parse_args()
+
+    if not args.force:
+        check_touchfile() # Exits if already configured
+
+    mirror_path = args.mirror_file or DEFAULT_MIRROR_PATH
+    try:
+        _configure_repos(mirror_path)
+        return 0
+    except Exception as e:
+        logger.error("Configuration failed: %s", e, exc_info=True)
+        return 1
 
 
 if __name__ == "__main__":

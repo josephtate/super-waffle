@@ -40,7 +40,12 @@ def test_cloud_metadata_and_mirror(monkeypatch, expected_provider, expected_regi
         return "fallback-id"
 
     monkeypatch.setattr("rlc_cloud_repos.cloud_metadata.subprocess.check_output", fake_check_output)
-    monkeypatch.setenv("RLC_MIRROR_MAP_PATH", str(FIXTURES_DIR / "mock-mirrors.yaml"))
+    # Use setattr to patch the default path constant directly
+    mock_mirror_path = str(FIXTURES_DIR / "mock-mirrors.yaml")
+    monkeypatch.setattr("rlc_cloud_repos.repo_config.DEFAULT_MIRROR_PATH", mock_mirror_path)
+    # Clear potential env var override to ensure setattr is effective
+    monkeypatch.delenv("RLC_MIRROR_MAP_PATH", raising=False)
+
 
     metadata = get_cloud_metadata()
     assert metadata["provider"] == expected_provider
@@ -70,7 +75,12 @@ def test_dnf_vars_creation_and_backup(monkeypatch, tmp_path):
     (var_dir / "baseurl1").write_text("original-value")
 
     monkeypatch.setattr("rlc_cloud_repos.dnf_vars.DNF_VARS_DIR", var_dir)
-    monkeypatch.setenv("RLC_MIRROR_MAP_PATH", str(FIXTURES_DIR / "mock-mirrors.yaml"))
+    # Use setattr to patch the default path constant directly
+    mock_mirror_path = str(FIXTURES_DIR / "mock-mirrors.yaml")
+    monkeypatch.setattr("rlc_cloud_repos.repo_config.DEFAULT_MIRROR_PATH", mock_mirror_path)
+    # Clear potential env var override to ensure setattr is effective
+    monkeypatch.delenv("RLC_MIRROR_MAP_PATH", raising=False)
+
 
     monkeypatch.setattr("rlc_cloud_repos.cloud_metadata.subprocess.check_output", lambda cmd, text=True: {
         "cloud_name": "aws",
