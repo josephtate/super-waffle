@@ -138,10 +138,9 @@ Mirror mapping is handled via a region → mirror YAML file (`ciq-mirrors.yaml`)
 ## Development Notes
 - Touch file at `/etc/rlc-cloud-repos/.configured` used to block rerun
 - Removed syslog/journal — logs only to stdout/stderr
-- RPM Builds will need appropriate steps to: 
-    1. Place marker file on install. 
-    2. Remove marker file on upgrade and re-run to trigger update of vars from
-     new mirror matrix. 
+- The included RPM spec (rpm/rlc-cloud-repos.spec) handles the marker file lifecycle:
+    1. Creates the marker file on initial install (%post).
+    2. Removes the marker file on upgrade (%posttrans) and uninstall (%postun) to allow reconfiguration.
 
 ---
 
