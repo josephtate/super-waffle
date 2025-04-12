@@ -6,8 +6,8 @@ RLC Cloud Repos - Cloud Metadata Detection
 Extracts normalized cloud provider and region from cloud-init query.
 """
 
-import subprocess
 import logging
+import subprocess
 
 logger = logging.getLogger(__name__)
 
@@ -23,8 +23,12 @@ def get_cloud_metadata() -> dict[str, str]:
         RuntimeError: If cloud-init query fails.
     """
     try:
-        provider = subprocess.check_output(["cloud-init", "query", "cloud_name"], text=True).strip()
-        region = subprocess.check_output(["cloud-init", "query", "region"], text=True).strip()
+        provider = subprocess.check_output(
+            ["cloud-init", "query", "cloud_name"], text=True
+        ).strip()
+        region = subprocess.check_output(
+            ["cloud-init", "query", "region"], text=True
+        ).strip()
         return {"provider": provider, "region": region}
     except subprocess.CalledProcessError as e:
         logger.error("Failed to query cloud-init: %s", e)

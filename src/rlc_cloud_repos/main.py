@@ -9,23 +9,15 @@ for optimized regional repo access.
 
 import argparse
 import logging
-import sys
 import os
+import sys
 from datetime import datetime
 
 from rlc_cloud_repos.cloud_metadata import get_cloud_metadata
-from rlc_cloud_repos.log_utils import (
-    setup_logging, 
-    log_and_print, 
-    logger
-)
 from rlc_cloud_repos.dnf_vars import ensure_all_dnf_vars
-from rlc_cloud_repos.repo_config import (
-    load_mirror_map, 
-    select_mirror, 
-    DEFAULT_MIRROR_PATH, 
-    MARKERFILE
-)
+from rlc_cloud_repos.log_utils import log_and_print, logger, setup_logging
+from rlc_cloud_repos.repo_config import (DEFAULT_MIRROR_PATH, MARKERFILE,
+                                         load_mirror_map, select_mirror)
 
 
 def check_touchfile() -> None:
@@ -62,7 +54,9 @@ def _configure_repos(mirror_file_path: str) -> None:
     mirror_map = load_mirror_map(mirror_file_path)
     log_and_print(f"Loaded mirror map from {mirror_file_path}")
 
-    primary_url, backup_url = select_mirror({"provider": provider, "region": region}, mirror_map)
+    primary_url, backup_url = select_mirror(
+        {"provider": provider, "region": region}, mirror_map
+    )
     log_and_print(f"Selected mirror URL: {primary_url}")
 
     # Set DNF vars
@@ -83,14 +77,18 @@ def main() -> int:
 
     parser = argparse.ArgumentParser(
         description="RLC Cloud Repo Resolver",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument("--mirror-file", help="Override path to mirror map YAML")
-    parser.add_argument("--force", action="store_true", help="Force reconfiguration (ignore marker file)")
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Force reconfiguration (ignore marker file)",
+    )
     args = parser.parse_args()
 
     if not args.force:
-        check_touchfile() # Exits if already configured
+        check_touchfile()  # Exits if already configured
 
     mirror_path = args.mirror_file or DEFAULT_MIRROR_PATH
     try:

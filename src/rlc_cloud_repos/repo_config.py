@@ -1,11 +1,12 @@
 # src/rlc_cloud_repos/repo_config.py
 import logging
 import os
-import yaml
 from pathlib import Path
 from shutil import copyfile
-from pathlib import Path
 from typing import Any, Optional
+
+import yaml
+
 from rlc_cloud_repos.log_utils import log_and_print
 
 logger = logging.getLogger(__name__)
@@ -28,11 +29,7 @@ def load_mirror_map(yaml_path: Optional[str] = None) -> dict[str, Any]:
         FileNotFoundError: If file does not exist.
         ValueError: If YAML is invalid.
     """
-    yaml_path = (
-        yaml_path or
-        os.getenv("RLC_MIRROR_MAP_PATH") or
-        DEFAULT_MIRROR_PATH
-    )
+    yaml_path = yaml_path or os.getenv("RLC_MIRROR_MAP_PATH") or DEFAULT_MIRROR_PATH
     path = Path(yaml_path)
 
     if not path.exists():
@@ -47,7 +44,9 @@ def load_mirror_map(yaml_path: Optional[str] = None) -> dict[str, Any]:
         raise ValueError(f"Invalid YAML in mirror map: {e}")
 
 
-def select_mirror(metadata: dict[str, str], mirror_map: dict[str, Any]) -> tuple[str, str]:
+def select_mirror(
+    metadata: dict[str, str], mirror_map: dict[str, Any]
+) -> tuple[str, str]:
     """
     Chooses the best primary and backup mirror URLs for the given cloud metadata.
 
