@@ -1,2 +1,2 @@
 include src/rlc_cloud_repos/data/ciq-mirrors.yaml
-include src/scripts/20_rlc-cloud-repos.cfg
+include src/cloud-config/20_rlc-cloud-repos.cfg

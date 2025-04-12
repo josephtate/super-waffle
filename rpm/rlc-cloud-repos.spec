@@ -1,6 +1,6 @@
 Name:           rlc-cloud-repos
 Version:        0.1.0
-Release:        0
+Release:        1%{?dist}
 Summary:        Cloud-aware repo autoconfiguration
 
 License:        MIT
@@ -31,7 +31,7 @@ ls
 
 %install
 %pyproject_install
-install -Dm0644 src/rlc_cloud_repos/scripts/20_rlc-cloud-repos.cfg %{buildroot}/etc/cloud/cloud.cfg.d/20_rlc-cloud-repos.cfg
+install -Dm0644 src/rlc_cloud_repos/cloud-config/20_rlc-cloud-repos.cfg %{buildroot}/etc/cloud/cloud.cfg.d/20_rlc-cloud-repos.cfg
 install -Dm0644 src/rlc_cloud_repos/data/ciq-mirrors.yaml %{buildroot}/usr/share/rlc-cloud-repos/ciq-mirrors.yaml
 
 %files
