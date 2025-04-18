@@ -1,0 +1,95 @@
+
+import pytest
+from pathlib import Path
+import yaml
+from rlc_cloud_repos.framework.azure_mirrors import (
+    load_yaml_file,
+    extract_active_regions,
+    generate_mirror_urls,
+    transform_azure_mirrors
+)
+
+FIXTURES_DIR = Path(__file__).parent / "fixtures"
+
+def test_load_yaml_file():
+    yaml_path = FIXTURES_DIR / "mock-mirrors.yaml"
+    data = load_yaml_file(str(yaml_path))
+    assert isinstance(data, dict)
+    assert "azure" in data
+
+def test_extract_active_regions():
+    metadata = {
+        "Regions": [
+            {"name": "eastus", "regional_pair": "westus2"},
+            {"name": "westus2", "regional_pair": "eastus"},
+            None,  # Test handling of None entries
+            {"wrongkey": "should be skipped"},  # Test handling of invalid entries
+        ]
+    }
+    regions = extract_active_regions(metadata)
+    assert len(regions) == 2
+    assert regions[0]["name"] == "eastus"
+    assert regions[0]["regional_pair"] == "westus2"
+    assert regions[1]["name"] == "westus2"
+    assert regions[1]["regional_pair"] == "eastus"
+
+def test_generate_mirror_urls():
+    regions = [
+        {"name": "eastus", "regional_pair": "westus2"},
+        {"name": "westus2", "regional_pair": "eastus"}
+    ]
+    mirrors = generate_mirror_urls(regions)
+    
+    assert "eastus" in mirrors
+    assert mirrors["eastus"]["primary"] == "https://depot.eastus.prod.azure.ciq.com"
+    assert mirrors["eastus"]["backup"] == "https://depot.westus2.prod.azure.ciq.com"
+    
+    assert "westus2" in mirrors
+    assert mirrors["westus2"]["primary"] == "https://depot.westus2.prod.azure.ciq.com"
+    assert mirrors["westus2"]["backup"] == "https://depot.eastus.prod.azure.ciq.com"
+
+def test_transform_azure_mirrors(tmp_path):
+    # Create temporary test files
+    metadata_file = tmp_path / "test_metadata.yaml"
+    mirrors_file = tmp_path / "test_mirrors.yaml"
+    output_file = tmp_path / "test_output.yaml"
+    
+    # Write test data
+    metadata = {
+        "Regions": [
+            {"name": "eastus", "regional_pair": "westus2"},
+            {"name": "westus2", "regional_pair": "eastus"}
+        ]
+    }
+    existing_mirrors = {
+        "azure": {
+            "default": {"primary": "https://depot.eastus.prod.azure.ciq.com"}
+        }
+    }
+    
+    with open(metadata_file, "w") as f:
+        yaml.dump(metadata, f)
+    with open(mirrors_file, "w") as f:
+        yaml.dump(existing_mirrors, f)
+    
+    # Run transformation
+    result = transform_azure_mirrors(
+        str(metadata_file),
+        str(mirrors_file),
+        str(output_file)
+    )
+    
+    # Verify results
+    assert "azure" in result
+    assert "default" in result["azure"]
+    assert "eastus" in result["azure"]
+    assert "westus2" in result["azure"]
+    assert result["azure"]["eastus"]["primary"] == "https://depot.eastus.prod.azure.ciq.com"
+    assert result["azure"]["eastus"]["backup"] == "https://depot.westus2.prod.azure.ciq.com"
+
+def test_transform_azure_mirrors_error_handling():
+    with pytest.raises(FileNotFoundError):
+        transform_azure_mirrors(
+            "nonexistent_metadata.yaml",
+            "nonexistent_mirrors.yaml"
+        )

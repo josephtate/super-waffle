@@ -5,3 +5,14 @@ channel = "stable-24_05"
 
 [deployment]
 run = ["sh", "-c", "src/rlc_cloud_repos/main.py"]
+
+[workflows]
+
+[[workflows.workflow]]
+name = "Run Tests"
+author = 4915123
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python -m pytest tests/test_azure_mirrors.py -v"
