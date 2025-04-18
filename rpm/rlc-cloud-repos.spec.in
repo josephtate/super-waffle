@@ -1,5 +1,5 @@
 Name:           rlc-cloud-repos
-Version:        0.1.0
+Version:        VERSION
 Release:        1%{?dist}
 Summary:        Cloud-aware repo autoconfiguration
 
@@ -15,7 +15,7 @@ BuildRequires:  python3-wheel
 BuildRequires:  pyproject-rpm-macros
 
 Requires:       python3
-Requires:       pyyaml
+Requires:       python3-pyyaml
 Requires:       cloud-init
 
 %description

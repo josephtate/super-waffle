@@ -1,19 +1,34 @@
-VERSION := 0.1.0
+VERSION := $(shell python3 -c "from rlc_cloud_repos import __version__; print(__version__)" 2>/dev/null)
 PACKAGE := rlc-cloud-repos
 PY_PACKAGE := rlc_cloud_repos
+distdir := dist
 
-.PHONY: install clean test lint sdist rpm
+.PHONY: install clean test lint sdist rpm spec dev mock
+
+$(distdir)/rpm/$(PACKAGE).spec:
+	@echo "📄 Generating RPM spec file..."
+	mkdir -p $(distdir)/rpm
+	sed -e 's/^\(Version:\s*\)VERSION/\1$(VERSION)/' rpm/$(PACKAGE).spec.in > $(distdir)/rpm/$(PACKAGE).spec
+
+spec: $(distdir)/rpm/$(PACKAGE).spec
+
+dev:
+	@echo "🔧 Installing development dependencies..."
+	pip install -e .[dev]
 
 install:
 	@echo "🔧 Installing $(PACKAGE) globally..."
 	pip install --root=/ --prefix=/usr -e .
 
-dist: 
-	python3 -m build
+dist:
+	@echo "🛞 Building wheel..."
+	python3 -m build --wheel
 
-sdist: dist
-	@echo "📆 Building source distribution tarball..."
+$(distdir)/$(PY_PACKAGE)-$(VERSION).tar.gz: setup.cfg setup.py $(shell find src -name '*.py')
+	@echo "📦 Building source distribution..."
 	python3 -m build --sdist
+
+sdist: $(distdir)/$(PY_PACKAGE)-$(VERSION).tar.gz
 
 lint:
 	@echo "🔍 Running linters..."
@@ -23,6 +38,7 @@ lint:
 
 clean:
 	@echo "🦚 Cleaning build artifacts..."
+	rm -f rpm/$(PACKAGE).spec rpm/*.tar.gz
 	rm -rf build dist
 	rm -rf rpm/[0-9]*.patch
 	find ./ -type d -name "*.egg-info" -exec rm -rf {} +
@@ -30,14 +46,17 @@ clean:
 	find . -type d -name "*.dist-info" -exec rm -rf {} +
 	find . -type d -name "*.egg-info" -exec rm -rf {} +
 	rm -rf ~/.cache/pip/wheels/*
+	rm -f .coverage
 
-rpm: dist
+rpm-tarball: spec sdist
+	# RPM expects a dash name, but python's sdist replaces - with _
 	@echo "📆 Repackaging tarball with dash-name for RPM..."
 	rm -rf build/tmp && mkdir -p build/tmp
 	tar -xzf dist/$(PY_PACKAGE)-$(VERSION).tar.gz -C build/tmp
 	mv build/tmp/$(PY_PACKAGE)-$(VERSION) build/tmp/$(PACKAGE)-$(VERSION)
 	tar -czf dist/$(PACKAGE)-$(VERSION).tar.gz -C build/tmp $(PACKAGE)-$(VERSION)
 
+rpm: rpm-tarball
 	@echo "📄 Copying tarball into SOURCES for rpmbuild..."
 	mkdir -p ~/rpmbuild/SOURCES
 	cp dist/$(PACKAGE)-$(VERSION).tar.gz ~/rpmbuild/SOURCES/
@@ -48,15 +67,10 @@ rpm: dist
 		exit 1; \
 	fi
 
-mock: dist
+mock: spec rpm-tarball
 	@echo "📦 Building SRPM..."
-	# Repackage with dash-name expected by RPM
-	rm -rf build/tmp && mkdir -p build/tmp
-	tar -xzf dist/rlc_cloud_repos-*.tar.gz -C build/tmp
-	mv build/tmp/rlc_cloud_repos-* build/tmp/rlc-cloud-repos-$(VERSION)
-	tar -czf rpm/rlc-cloud-repos-$(VERSION).tar.gz -C build/tmp rlc-cloud-repos-$(VERSION)
 	# Run packit
-	packit srpm --output dist/
+	packit --debug srpm --output dist/
 	@echo "🧪 Running mock build..."
 	mock -r rocky-9-x86_64 --resultdir=dist --enable-network dist/*.src.rpm
 
