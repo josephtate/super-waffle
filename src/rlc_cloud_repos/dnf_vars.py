@@ -1,4 +1,3 @@
-# src/rlc_cloud_repos/dnf_vars.py
 """
 DNF Variable Management for CIQ Cloud Repos
 
@@ -14,13 +13,12 @@ Variables Managed:
 import logging
 from pathlib import Path
 
-DNF_VARS_DIR = Path("/etc/dnf/vars")
 BACKUP_SUFFIX = ".bak"
 
 logger = logging.getLogger(__name__)
 
 
-def _write_dnf_var(name: str, value: str):
+def _write_dnf_var(basepath: Path, name: str, value: str):
     """
     Creates or updates a DNF variable file with a given value.
 
@@ -38,10 +36,10 @@ def _write_dnf_var(name: str, value: str):
         - Creates .bak files for existing values that are changed
         - Logs all operations
     """
-    path = DNF_VARS_DIR / name
+    path = basepath / name
 
     # Ensure /etc/dnf/vars exists
-    DNF_VARS_DIR.mkdir(parents=True, exist_ok=True)
+    basepath.mkdir(parents=True, exist_ok=True)
 
     # Check if exists and content differs
     if path.exists():
@@ -52,7 +50,8 @@ def _write_dnf_var(name: str, value: str):
         # Backup
         backup_path = path.with_suffix(path.suffix + BACKUP_SUFFIX)
         path.rename(backup_path)
-        logger.info(f"Backed up existing DNF var '{name}' to '{backup_path.name}'")
+        logger.info(
+            f"Backed up existing DNF var '{name}' to '{backup_path.name}'")
 
     try:
         path.write_text(f"{value}\n")
@@ -61,7 +60,7 @@ def _write_dnf_var(name: str, value: str):
         logger.error(f"Cannot write to DNF var '{name}' ({e}), skipping")
 
 
-def ensure_all_dnf_vars(primary_url: str, backup_url: str):
+def ensure_all_dnf_vars(basepath: Path, primary_url: str, backup_url: str):
     """
     Sets DNF variables for the primary and backup mirror URLs.
 
@@ -69,5 +68,5 @@ def ensure_all_dnf_vars(primary_url: str, backup_url: str):
         primary_url (str): Preferred mirror.
         backup_url (str): Fallback mirror.
     """
-    _write_dnf_var("baseurl1", primary_url)
-    _write_dnf_var("baseurl2", backup_url)
+    _write_dnf_var(basepath, "baseurl1", primary_url)
+    _write_dnf_var(basepath, "baseurl2", backup_url)

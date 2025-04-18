@@ -1,5 +1,4 @@
 # src/rlc_cloud_repos/cloud_metadata.py
-
 """
 RLC Cloud Repos - Cloud Metadata Detection
 
@@ -8,11 +7,12 @@ Extracts normalized cloud provider and region from cloud-init query.
 
 import logging
 import subprocess
+from typing import Dict
 
 logger = logging.getLogger(__name__)
 
 
-def get_cloud_metadata() -> dict[str, str]:
+def get_cloud_metadata() -> Dict[str, str]:
     """
     Detects the cloud environment using cloud-init's query tool.
 

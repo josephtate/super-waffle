@@ -1,12 +1,19 @@
-specfile_path: rpm/rlc-cloud-repos.spec
+specfile_path: dist/rpm/rlc-cloud-repos.spec
 downstream_package_name: rlc-cloud-repos
-upstream_package_name: rlc-cloud-repos
+upstream_package_name: rlc_cloud_repos
 upstream_ref: dev
 create_pr: false
 
 actions:
-  post-upstream-clone: "true" # prevent patch generation
-  create-archive: "true" # skip tarball generation
+  post-upstream-clone:
+    - make spec
+  get-current-version:
+    # This is some deep pcre voodoo to get the version from the file
+    - grep -oP '__version__\s*=\s*[\p{QMark}]\K[^\p{QMark}]+' src/rlc_cloud_repos/__init__.py
+  create-archive:
+    - make sdist
+    - sh -c 'ls -1t dist/rlc_cloud_repos-*.tar.gz | head -n 1'
+#   post-upstream-clone: "true" # prevent patch generation
 
 jobs:
   - job: build
