@@ -192,3 +192,9 @@ mockbuild/
 # Local Testing:
 Makefile.local
 scripts.local
+
+
+# Replit
+.replit
+.cache
+.pythonlibs
