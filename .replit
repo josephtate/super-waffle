@@ -5,7 +5,7 @@ channel = "stable-24_05"
 packages = ["libyaml"]
 
 [deployment]
-run = ["sh", "-c", "src/rlc_cloud_repos/main.py"]
+run = ["python", "src/rlc_cloud_repos/main.py"]
 
 [workflows]
 
