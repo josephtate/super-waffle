@@ -20,7 +20,6 @@ def mock_get_cloud_metadata(monkeypatch, request):
         )
 
 
-
 def test_parse_args_default():
     """Test parse_args with default arguments."""
     args = parse_args([])
@@ -35,7 +34,7 @@ def test_parse_args_with_values():
     assert args.force
 
 
-def test_main_with_force_flag(tmp_path):
+def test_main_with_force_flag(tmp_path, dnf_vars_dir):
     """Test main function with force flag bypasses marker check."""
     marker = tmp_path / ".configured"
     marker.touch()
@@ -61,7 +60,7 @@ def test_main_respects_marker_file(tmp_path):
         assert result == 0
 
 
-def test_main_creates_marker_file(tmp_path):
+def test_main_creates_marker_file(tmp_path, dnf_vars_dir):
     """Test main creates marker file after successful run."""
     marker = tmp_path / ".configured"
     mirror_file = FIXTURES_DIR / "mock-mirrors.yaml"
@@ -75,7 +74,7 @@ def test_main_creates_marker_file(tmp_path):
         assert marker.exists()
 
 
-def test_main_with_custom_mirror_file(tmp_path):
+def test_main_with_custom_mirror_file(tmp_path, dnf_vars_dir):
     """Test main with custom mirror file path."""
     mirror_file = FIXTURES_DIR / "mock-mirrors.yaml"
     marker = tmp_path / ".configured"
@@ -97,7 +96,7 @@ def test_main_handles_configuration_error(tmp_path):
         assert result == 1
 
 
-def test_configure_repos_writes_touchfile(tmp_path):
+def test_configure_repos_writes_touchfile(tmp_path, dnf_vars_dir):
     """Test _configure_repos writes marker file."""
     marker = tmp_path / ".configured"
     mirror_file = FIXTURES_DIR / "mock-mirrors.yaml"
