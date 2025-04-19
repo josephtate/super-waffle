@@ -3,10 +3,22 @@ from pathlib import Path
 
 import pytest
 
-from rlc_cloud_repos.main import (DEFAULT_MIRROR_PATH, MARKERFILE,
-                                  _configure_repos, main, parse_args)
+from rlc_cloud_repos.main import _configure_repos, main, parse_args
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
+
+
+@pytest.fixture(autouse=True)
+def mock_get_cloud_metadata(monkeypatch, request):
+    if "test_cloud_metadata_suite" not in request.node.nodeid:
+        monkeypatch.setattr(
+            "rlc_cloud_repos.main.get_cloud_metadata",
+            lambda: {
+                "provider": "mock",
+                "region": "mock-region"
+            },
+        )
+
 
 
 def test_parse_args_default():
@@ -56,7 +68,8 @@ def test_main_creates_marker_file(tmp_path):
 
     with pytest.MonkeyPatch().context() as mp:
         mp.setattr("rlc_cloud_repos.main.MARKERFILE", str(marker))
-        mp.setattr("rlc_cloud_repos.main.DEFAULT_MIRROR_PATH", str(mirror_file))
+        mp.setattr("rlc_cloud_repos.main.DEFAULT_MIRROR_PATH",
+                   str(mirror_file))
         result = main([])
         assert result == 0
         assert marker.exists()
