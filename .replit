@@ -1,11 +1,8 @@
 modules = ["python-3.8"]
-run = "src/rlc_cloud_repos/main.py"
+run = "pytest --cov"
 [nix]
 channel = "stable-24_05"
 packages = ["libyaml"]
-
-[deployment]
-run = ["python", "src/rlc_cloud_repos/main.py"]
 
 [workflows]
 

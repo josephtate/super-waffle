@@ -1,4 +1,4 @@
-# src/rlc_cloud_repos/main.py
+#!env python
 """
 RLC Cloud Repo Resolver CLI
 
@@ -8,7 +8,6 @@ for optimized regional repo access.
 """
 
 import argparse
-import logging
 import os
 import sys
 from datetime import datetime
@@ -26,7 +25,8 @@ def check_touchfile() -> None:
     Creates an idempotent barrier to prevent re-running this tool.
     """
     if os.path.exists(MARKERFILE):
-        log_and_print(f"Marker file exists ({MARKERFILE}). Skipping repo update.")
+        log_and_print(
+            f"Marker file exists ({MARKERFILE}). Skipping repo update.")
         sys.exit(0)
 
 
@@ -48,20 +48,24 @@ def _configure_repos(mirror_file_path: str) -> None:
     metadata = get_cloud_metadata()
     provider = metadata["provider"]
     region = metadata["region"]
-    log_and_print(f"Using cloud metadata: provider={provider}, region={region}")
+    log_and_print(
+        f"Using cloud metadata: provider={provider}, region={region}")
 
     # Load mirror map + resolve appropriate URL
     mirror_map = load_mirror_map(mirror_file_path)
     log_and_print(f"Loaded mirror map from {mirror_file_path}")
 
     primary_url, backup_url = select_mirror(
-        {"provider": provider, "region": region}, mirror_map
-    )
+        {
+            "provider": provider,
+            "region": region
+        }, mirror_map)
     log_and_print(f"Selected mirror URL: {primary_url}")
 
     # Set DNF vars
     ensure_all_dnf_vars(primary_url, backup_url)
-    logger.info("DNF vars set for mirror=%s and backup=%s", primary_url, backup_url)
+    logger.info("DNF vars set for mirror=%s and backup=%s", primary_url,
+                backup_url)
 
     # Create marker file to prevent future reruns
     write_touchfile()
@@ -82,7 +86,8 @@ def parse_args(args=None):
         description="RLC Cloud Repo Resolver",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    parser.add_argument("--mirror-file", help="Override path to mirror map YAML")
+    parser.add_argument("--mirror-file",
+                        help="Override path to mirror map YAML")
     parser.add_argument(
         "--force",
         action="store_true",
@@ -103,7 +108,7 @@ def main(args=None) -> int:
         int: 0 for success, 1 for failure
     """
     setup_logging()
-    
+
     parsed_args = parse_args(args)
 
     if not parsed_args.force:

@@ -1,11 +1,7 @@
-
 # tests/test_main.py
 """Tests for the main module."""
 
-import os
 from unittest.mock import patch
-
-import pytest
 
 from rlc_cloud_repos.main import main, parse_args
 # Add import for DEFAULT_MIRROR_PATH directly from main module for patching
@@ -49,7 +45,8 @@ def test_main_with_mirror_file(mock_configure, mock_check, mock_logging):
 
 
 @patch("rlc_cloud_repos.main.setup_logging")
-@patch("rlc_cloud_repos.main._configure_repos", side_effect=Exception("Test error"))
+@patch("rlc_cloud_repos.main._configure_repos",
+       side_effect=Exception("Test error"))
 def test_main_error_handling(mock_configure, mock_logging):
     """Test main function error handling."""
     result = main(["--force"])
@@ -62,17 +59,18 @@ def test_marker_file_respects_configuration(tmp_path, monkeypatch):
     # Set up temporary marker file path
     marker_file = tmp_path / ".configured"
     monkeypatch.setattr("rlc_cloud_repos.main.MARKERFILE", str(marker_file))
-    
+
     # Create marker file
     marker_file.parent.mkdir(exist_ok=True)
     marker_file.write_text("Test marker")
-    
+
     # Test that main respects marker file
     with patch("rlc_cloud_repos.main._configure_repos") as mock_configure:
         result = main([])  # No --force flag
         assert result == 0
-        mock_configure.assert_not_called()  # Should not be called due to marker file
-    
+        mock_configure.assert_not_called(
+        )  # Should not be called due to marker file
+
     # Test with --force flag
     with patch("rlc_cloud_repos.main._configure_repos") as mock_configure:
         result = main(["--force"])
