@@ -8,7 +8,8 @@ from unittest.mock import patch
 import pytest
 
 from rlc_cloud_repos.main import main, parse_args
-from rlc_cloud_repos.repo_config import DEFAULT_MIRROR_PATH
+# Add import for DEFAULT_MIRROR_PATH directly from main module for patching
+from rlc_cloud_repos.main import DEFAULT_MIRROR_PATH, MARKERFILE
 
 
 def test_parse_args_default():
@@ -54,3 +55,26 @@ def test_main_error_handling(mock_configure, mock_logging):
     result = main(["--force"])
     assert result == 1
     mock_configure.assert_called_once()
+
+
+def test_marker_file_respects_configuration(tmp_path, monkeypatch):
+    """Test that marker file prevents reconfiguration."""
+    # Set up temporary marker file path
+    marker_file = tmp_path / ".configured"
+    monkeypatch.setattr("rlc_cloud_repos.main.MARKERFILE", str(marker_file))
+    
+    # Create marker file
+    marker_file.parent.mkdir(exist_ok=True)
+    marker_file.write_text("Test marker")
+    
+    # Test that main respects marker file
+    with patch("rlc_cloud_repos.main._configure_repos") as mock_configure:
+        result = main([])  # No --force flag
+        assert result == 0
+        mock_configure.assert_not_called()  # Should not be called due to marker file
+    
+    # Test with --force flag
+    with patch("rlc_cloud_repos.main._configure_repos") as mock_configure:
+        result = main(["--force"])
+        assert result == 0
+        mock_configure.assert_called_once()  # Should be called with --force
