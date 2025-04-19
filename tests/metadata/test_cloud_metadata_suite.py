@@ -19,7 +19,7 @@ from rlc_cloud_repos.dnf_vars import BACKUP_SUFFIX, ensure_all_dnf_vars
 from rlc_cloud_repos.log_utils import log_and_print
 from rlc_cloud_repos.repo_config import load_mirror_map, select_mirror
 
-FIXTURES_DIR = Path(__file__).parent / "fixtures"
+FIXTURES_DIR = Path(__file__).parent.parent / "fixtures"
 
 
 @pytest.mark.parametrize(
@@ -63,18 +63,6 @@ def test_cloud_metadata_and_mirror(monkeypatch, expected_provider, expected_regi
     primary, backup = select_mirror(metadata, mirror_map)
     assert primary.startswith("https://")
     assert isinstance(backup, str)
-
-
-def test_marker_file_respected(monkeypatch, tmp_path):
-    marker_file = tmp_path / ".rlc_marker"
-    marker_file.write_text("already-done")
-
-    # monkeypatch.setattr("os.path.exists", lambda p: str(marker_file) in p)
-    # monkeypatch.setattr("os.remove", lambda p: marker_file.unlink())
-
-    assert marker_file.exists()
-    os.remove(str(marker_file))
-    assert not marker_file.exists()
 
 
 def test_dnf_vars_creation_and_backup(monkeypatch, tmp_path):

@@ -24,9 +24,11 @@ def get_cloud_metadata() -> Dict[str, str]:
     """
     try:
         provider = subprocess.check_output(
-            ["cloud-init", "query", "cloud_name"], text=True).strip()
-        region = subprocess.check_output(["cloud-init", "query", "region"],
-                                         text=True).strip()
+            ["cloud-init", "query", "cloud_name"], text=True
+        ).strip()
+        region = subprocess.check_output(
+            ["cloud-init", "query", "region"], text=True
+        ).strip()
         return {"provider": provider, "region": region}
     except subprocess.CalledProcessError as e:
         logger.error("Failed to query cloud-init: %s", e)

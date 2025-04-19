@@ -3,14 +3,12 @@ from pathlib import Path
 import pytest
 import yaml
 
-from rlc_cloud_repos.framework.azure_mirrors import (
-    extract_active_regions,
-    generate_mirror_urls,
-    load_yaml_file,
-    transform_azure_mirrors,
-)
+from rlc_cloud_repos.framework.azure_mirrors import (extract_active_regions,
+                                                     generate_mirror_urls,
+                                                     load_yaml_file,
+                                                     transform_azure_mirrors)
 
-FIXTURES_DIR = Path(__file__).parent / "fixtures"
+FIXTURES_DIR = Path(__file__).parent.parent / "fixtures"
 
 
 def test_load_yaml_file():

@@ -23,13 +23,12 @@ def check_touchfile() -> bool:
     """
     Check if the system has already been configured.
     Returns True if marker file exists, indicating configuration should be skipped.
-    
+
     Returns:
         bool: True if marker file exists, False otherwise
     """
     if os.path.exists(MARKERFILE):
-        log_and_print(
-            f"Marker file exists ({MARKERFILE}). Skipping repo update.")
+        log_and_print(f"Marker file exists ({MARKERFILE}). Skipping repo update.")
         return True
     return False
 
@@ -52,24 +51,20 @@ def _configure_repos(mirror_file_path: str) -> None:
     metadata = get_cloud_metadata()
     provider = metadata["provider"]
     region = metadata["region"]
-    log_and_print(
-        f"Using cloud metadata: provider={provider}, region={region}")
+    log_and_print(f"Using cloud metadata: provider={provider}, region={region}")
 
     # Load mirror map + resolve appropriate URL
     mirror_map = load_mirror_map(mirror_file_path)
     log_and_print(f"Loaded mirror map from {mirror_file_path}")
 
     primary_url, backup_url = select_mirror(
-        {
-            "provider": provider,
-            "region": region
-        }, mirror_map)
+        {"provider": provider, "region": region}, mirror_map
+    )
     log_and_print(f"Selected mirror URL: {primary_url}")
 
     # Set DNF vars
     ensure_all_dnf_vars(primary_url, backup_url)
-    logger.info("DNF vars set for mirror=%s and backup=%s", primary_url,
-                backup_url)
+    logger.info("DNF vars set for mirror=%s and backup=%s", primary_url, backup_url)
 
     # Create marker file to prevent future reruns
     write_touchfile()
@@ -79,10 +74,10 @@ def _configure_repos(mirror_file_path: str) -> None:
 def parse_args(args=None):
     """
     Parse command line arguments
-    
+
     Args:
         args: Command line arguments (defaults to None, which uses sys.argv[1:])
-        
+
     Returns:
         Parsed arguments namespace
     """
@@ -90,8 +85,7 @@ def parse_args(args=None):
         description="RLC Cloud Repo Resolver",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    parser.add_argument("--mirror-file",
-                        help="Override path to mirror map YAML")
+    parser.add_argument("--mirror-file", help="Override path to mirror map YAML")
     parser.add_argument(
         "--force",
         action="store_true",
@@ -104,10 +98,10 @@ def main(args=None) -> int:
     """
     Entry point for RLC cloud repo resolver. Handles argument parsing and
     calls the core configuration logic.
-    
+
     Args:
         args: Command line arguments (defaults to None, which uses sys.argv[1:])
-        
+
     Returns:
         int: 0 for success, 1 for failure
     """
