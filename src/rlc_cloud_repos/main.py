@@ -68,13 +68,16 @@ def _configure_repos(mirror_file_path: str) -> None:
     log_and_print(f"Marker file written to {MARKERFILE}")
 
 
-def main() -> int:
+def parse_args(args=None):
     """
-    Entry point for RLC cloud repo resolver. Handles argument parsing and
-    calls the core configuration logic.
+    Parse command line arguments
+    
+    Args:
+        args: Command line arguments (defaults to None, which uses sys.argv[1:])
+        
+    Returns:
+        Parsed arguments namespace
     """
-    setup_logging()
-
     parser = argparse.ArgumentParser(
         description="RLC Cloud Repo Resolver",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -85,12 +88,28 @@ def main() -> int:
         action="store_true",
         help="Force reconfiguration (ignore marker file)",
     )
-    args = parser.parse_args()
+    return parser.parse_args(args)
 
-    if not args.force:
+
+def main(args=None) -> int:
+    """
+    Entry point for RLC cloud repo resolver. Handles argument parsing and
+    calls the core configuration logic.
+    
+    Args:
+        args: Command line arguments (defaults to None, which uses sys.argv[1:])
+        
+    Returns:
+        int: 0 for success, 1 for failure
+    """
+    setup_logging()
+    
+    parsed_args = parse_args(args)
+
+    if not parsed_args.force:
         check_touchfile()  # Exits if already configured
 
-    mirror_path = args.mirror_file or DEFAULT_MIRROR_PATH
+    mirror_path = parsed_args.mirror_file or DEFAULT_MIRROR_PATH
     try:
         _configure_repos(mirror_path)
         return 0
@@ -100,4 +119,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main(sys.argv[1:]))
