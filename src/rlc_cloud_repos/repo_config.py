@@ -3,7 +3,7 @@ import logging
 import os
 from pathlib import Path
 from shutil import copyfile
-from typing import Any, Optional
+from typing import Any, Dict, Optional, Tuple
 
 import yaml
 
@@ -15,7 +15,7 @@ MARKERFILE = "/etc/rlc-cloud-repos/.configured"
 DEFAULT_MIRROR_PATH = "/usr/share/rlc-cloud-repos/ciq-mirrors.yaml"
 
 
-def load_mirror_map(yaml_path: Optional[str] = None) -> dict[str, Any]:
+def load_mirror_map(yaml_path: Optional[str] = None) -> Dict[str, Any]:
     """
     Loads the YAML mirror map config.
 
@@ -23,7 +23,7 @@ def load_mirror_map(yaml_path: Optional[str] = None) -> dict[str, Any]:
         yaml_path (str, optional): Custom path to YAML config.
 
     Returns:
-        dict[str, Any]: Mirror map dictionary.
+        Dict[str, Any]: Mirror map dictionary.
 
     Raises:
         FileNotFoundError: If file does not exist.
@@ -45,8 +45,8 @@ def load_mirror_map(yaml_path: Optional[str] = None) -> dict[str, Any]:
 
 
 def select_mirror(
-    metadata: dict[str, str], mirror_map: dict[str, Any]
-) -> tuple[str, str]:
+    metadata: Dict[str, str], mirror_map: Dict[str, Any]
+) -> Tuple[str, str]:
     """
     Chooses the best primary and backup mirror URLs for the given cloud metadata.
 
