@@ -9,10 +9,10 @@ run = ["sh", "-c", "src/rlc_cloud_repos/main.py"]
 [workflows]
 
 [[workflows.workflow]]
-name = "Run Tests"
-author = 4915123
+name = "Run Tests with coverage"
 mode = "sequential"
+author = 4915123
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python -m pytest tests/test_azure_mirrors.py -v"
+args = "pytest --cov"
