@@ -19,15 +19,19 @@ from rlc_cloud_repos.repo_config import (DEFAULT_MIRROR_PATH, MARKERFILE,
                                          load_mirror_map, select_mirror)
 
 
-def check_touchfile() -> None:
+def check_touchfile() -> bool:
     """
-    Exit early if the system has already been configured.
-    Creates an idempotent barrier to prevent re-running this tool.
+    Check if the system has already been configured.
+    Returns True if marker file exists, indicating configuration should be skipped.
+    
+    Returns:
+        bool: True if marker file exists, False otherwise
     """
     if os.path.exists(MARKERFILE):
         log_and_print(
             f"Marker file exists ({MARKERFILE}). Skipping repo update.")
-        sys.exit(0)
+        return True
+    return False
 
 
 def write_touchfile() -> None:
@@ -112,7 +116,8 @@ def main(args=None) -> int:
     parsed_args = parse_args(args)
 
     if not parsed_args.force:
-        check_touchfile()  # Exits if already configured
+        if check_touchfile():  # Skip configuration if marker file exists
+            return 0
 
     mirror_path = parsed_args.mirror_file or DEFAULT_MIRROR_PATH
     try:
