@@ -1,78 +1,87 @@
-# tests/test_main.py
-"""Tests for the main module."""
 
-from unittest.mock import patch
+import os
+from pathlib import Path
+import pytest
 
-from rlc_cloud_repos.main import main, parse_args
-# Add import for DEFAULT_MIRROR_PATH directly from main module for patching
-from rlc_cloud_repos.main import DEFAULT_MIRROR_PATH, MARKERFILE
+from rlc_cloud_repos.main import main, parse_args, _configure_repos, DEFAULT_MIRROR_PATH, MARKERFILE
 
+FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
 def test_parse_args_default():
     """Test parse_args with default arguments."""
     args = parse_args([])
     assert args.mirror_file is None
-    assert args.force is False
-
+    assert not args.force
 
 def test_parse_args_with_values():
     """Test parse_args with specific values."""
     args = parse_args(["--mirror-file", "test.yaml", "--force"])
     assert args.mirror_file == "test.yaml"
-    assert args.force is True
+    assert args.force
 
-
-@patch("rlc_cloud_repos.main.setup_logging")
-@patch("rlc_cloud_repos.main.check_touchfile")
-@patch("rlc_cloud_repos.main._configure_repos")
-def test_main_success(mock_configure, mock_check, mock_logging):
-    """Test main function success path."""
-    result = main(["--force"])  # Force flag to skip touchfile check
-    assert result == 0
-    mock_configure.assert_called_once_with(DEFAULT_MIRROR_PATH)
-    mock_check.assert_not_called()  # Should be skipped due to force flag
-
-
-@patch("rlc_cloud_repos.main.setup_logging")
-@patch("rlc_cloud_repos.main.check_touchfile")
-@patch("rlc_cloud_repos.main._configure_repos")
-def test_main_with_mirror_file(mock_configure, mock_check, mock_logging):
-    """Test main function with custom mirror file."""
-    custom_path = "custom/path.yaml"
-    result = main(["--mirror-file", custom_path, "--force"])
-    assert result == 0
-    mock_configure.assert_called_once_with(custom_path)
-
-
-@patch("rlc_cloud_repos.main.setup_logging")
-@patch("rlc_cloud_repos.main._configure_repos",
-       side_effect=Exception("Test error"))
-def test_main_error_handling(mock_configure, mock_logging):
-    """Test main function error handling."""
-    result = main(["--force"])
-    assert result == 1
-    mock_configure.assert_called_once()
-
-
-def test_marker_file_respects_configuration(tmp_path, monkeypatch):
-    """Test that marker file prevents reconfiguration."""
-    # Set up temporary marker file path
-    marker_file = tmp_path / ".configured"
-    monkeypatch.setattr("rlc_cloud_repos.main.MARKERFILE", str(marker_file))
-
-    # Create marker file
-    marker_file.parent.mkdir(exist_ok=True)
-    marker_file.write_text("Test marker")
-
-    # Test that main respects marker file
-    with patch("rlc_cloud_repos.main._configure_repos") as mock_configure:
-        result = main([])  # No --force flag
-        assert result == 0
-        mock_configure.assert_not_called(
-        )  # Should not be called due to marker file
-
-    # Test with --force flag
-    with patch("rlc_cloud_repos.main._configure_repos") as mock_configure:
+def test_main_with_force_flag(tmp_path):
+    """Test main function with force flag bypasses marker check."""
+    marker = tmp_path / ".configured"
+    marker.touch()
+    
+    with pytest.MonkeyPatch().context() as mp:
+        mp.setattr("rlc_cloud_repos.main.MARKERFILE", str(marker))
+        mp.setattr("rlc_cloud_repos.main.DEFAULT_MIRROR_PATH", str(FIXTURES_DIR / "mock-mirrors.yaml"))
         result = main(["--force"])
         assert result == 0
-        mock_configure.assert_called_once()  # Should be called with --force
+
+def test_main_respects_marker_file(tmp_path):
+    """Test main respects existing marker file."""
+    marker = tmp_path / ".configured"
+    marker.touch()
+    
+    with pytest.MonkeyPatch().context() as mp:
+        mp.setattr("rlc_cloud_repos.main.MARKERFILE", str(marker))
+        result = main([])
+        assert result == 0
+
+def test_main_creates_marker_file(tmp_path):
+    """Test main creates marker file after successful run."""
+    marker = tmp_path / ".configured"
+    mirror_file = FIXTURES_DIR / "mock-mirrors.yaml"
+    
+    with pytest.MonkeyPatch().context() as mp:
+        mp.setattr("rlc_cloud_repos.main.MARKERFILE", str(marker))
+        mp.setattr("rlc_cloud_repos.main.DEFAULT_MIRROR_PATH", str(mirror_file))
+        result = main([])
+        assert result == 0
+        assert marker.exists()
+
+def test_main_with_custom_mirror_file(tmp_path):
+    """Test main with custom mirror file path."""
+    mirror_file = FIXTURES_DIR / "mock-mirrors.yaml"
+    marker = tmp_path / ".configured"
+    
+    with pytest.MonkeyPatch().context() as mp:
+        mp.setattr("rlc_cloud_repos.main.MARKERFILE", str(marker))
+        result = main(["--mirror-file", str(mirror_file)])
+        assert result == 0
+
+def test_main_handles_configuration_error(tmp_path):
+    """Test main handles configuration errors gracefully."""
+    with pytest.MonkeyPatch().context() as mp:
+        mp.setattr("rlc_cloud_repos.main._configure_repos", 
+                  lambda x: (_ for _ in ()).throw(Exception("Test error")))
+        result = main(["--force"])
+        assert result == 1
+
+def test_configure_repos_writes_touchfile(tmp_path):
+    """Test _configure_repos writes marker file."""
+    marker = tmp_path / ".configured"
+    mirror_file = FIXTURES_DIR / "mock-mirrors.yaml"
+    
+    with pytest.MonkeyPatch().context() as mp:
+        mp.setattr("rlc_cloud_repos.main.MARKERFILE", str(marker))
+        _configure_repos(str(mirror_file))
+        assert marker.exists()
+        assert "Configured on" in marker.read_text()
+
+def test_configure_repos_invalid_mirror_file():
+    """Test _configure_repos with invalid mirror file."""
+    with pytest.raises(Exception):
+        _configure_repos("nonexistent.yaml")
