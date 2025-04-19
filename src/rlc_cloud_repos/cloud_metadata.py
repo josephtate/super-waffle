@@ -12,7 +12,9 @@ import subprocess
 logger = logging.getLogger(__name__)
 
 
-def get_cloud_metadata() -> dict[str, str]:
+from typing import Dict
+
+def get_cloud_metadata() -> Dict[str, str]:
     """
     Detects the cloud environment using cloud-init's query tool.
 
