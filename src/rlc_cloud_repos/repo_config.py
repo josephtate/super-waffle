@@ -47,29 +47,23 @@ def select_mirror(metadata: Dict[str, str],
     provider = metadata["provider"].lower()
     region = metadata["region"]
 
+    # Set up our fallback fallbacks
+    # We do not use default values here because we want this to fail in tests if we have a bad file. We must always have a default with primary and backup values set.
+    default_primary = mirror_map.get("default").get("primary")
+    default_backup = mirror_map.get("default").get("backup")
+
     logger.info("Selecting mirror for provider=%s, region=%s", provider,
                 region)
 
-    provider_map = mirror_map.get(provider, {})
-    if isinstance(provider_map, dict):
-        region_map = provider_map.get(region)
-        if isinstance(region_map, dict):
-            return region_map.get("primary", ""), region_map.get("backup", "")
+    if provider in mirror_map:
+        provider_map = mirror_map[provider]
+        if region in provider_map:
+            region_map = provider_map.get(region, {})
+        else:
+            region_map = provider_map.get("default", {})
+        return region_map.get("primary", default_primary), region_map.get(
+            "backup", default_backup)
 
-        default_map = provider_map.get("default")
-        if isinstance(default_map, dict):
-            return default_map.get("primary",
-                                   ""), default_map.get("backup", "")
-        elif isinstance(default_map, str):
-            return default_map, ""
-
-    fallback = mirror_map.get("default")
-    if isinstance(fallback, dict):
-        return fallback.get("primary", ""), fallback.get("backup", "")
-    elif isinstance(fallback, str):
-        return fallback, ""
-
-    logger.error("No mirror found for provider=%s, region=%s", provider,
-                 region)
-    raise ValueError(
-        f"No mirror found for provider={provider}, region={region}")
+    else:
+        logger.debug("Provider %s not found, using default values", provider)
+        return default_primary, default_backup

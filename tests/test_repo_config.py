@@ -69,7 +69,7 @@ def test_select_mirror_global_fallback(mirrors_file):
             "provider": "unknown",
             "region": "unknown"
         }, mirror_map)
-    assert primary == "https://default.repo.mock.ciq"
+    assert primary == "https://depot.eastus.prod.azure.ciq.comSo not very programmatic."
 
 
 def test_select_mirror_no_fallback():
@@ -78,3 +78,10 @@ def test_select_mirror_no_fallback():
 
     with pytest.raises(ValueError):
         select_mirror({"provider": "unknown", "region": "unknown"}, mirror_map)
+
+
+def test_select_mirror_not_map():
+    """Test select_mirror raises error when mirror map is not a dict."""
+    mirror_map = "{'azure': 'https://depot.example.com'}"
+
+    with pytest.raises(ValueError):
