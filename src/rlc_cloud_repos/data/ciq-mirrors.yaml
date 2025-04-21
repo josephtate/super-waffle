@@ -103,15 +103,15 @@ azure:
 
   australiaeast:
     primary: https://depot.australiaeast.prod.azure.ciq.com
-    backup: https://depot.westus2.prod.azure.ciq.com
+    backup: https://depot.southeastasia.prod.azure.ciq.com
 
   northeurope:
     primary: https://depot.northeurope.prod.azure.ciq.com
-    backup: https://depot.westus2.prod.azure.ciq.com
+    backup: https://depot.southeastasia.prod.azure.ciq.com
 
   southeastasia:
     primary: https://depot.southeastasia.prod.azure.ciq.com
-    backup: https://depot.westus2.prod.azure.ciq.com
+    backup: https://depot.northeurope.prod.azure.ciq.com
 
   westus2:
     primary: https://depot.westus2.prod.azure.ciq.com
@@ -119,6 +119,7 @@ azure:
 
   default:
     primary: https://depot.eastus.prod.azure.ciq.com
+    abackup: https://depot.westus2.prod.azure.ciq.com
 
 gcp:
   default:
