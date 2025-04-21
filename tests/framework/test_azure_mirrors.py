@@ -10,7 +10,7 @@ FIXTURES_DIR = Path(__file__).parent.parent / "fixtures"
 
 def test_load_yaml_file():
     yaml_path = FIXTURES_DIR / "mock-mirrors.yaml"
-    data = load_yaml_file(str(yaml_path))
+    data = am.load_yaml_file(str(yaml_path))
     assert isinstance(data, dict)
     assert "azure" in data
 
@@ -32,7 +32,7 @@ def test_extract_active_regions():
             },  # Test handling of invalid entries
         ]
     }
-    regions = extract_active_regions(metadata)
+    regions = am.extract_active_regions(metadata)
     assert len(regions) == 2
     assert regions[0]["name"] == "eastus"
     assert regions[0]["regional_pair"] == "westus2"
@@ -51,7 +51,7 @@ def test_generate_mirror_urls():
             "regional_pair": "eastus"
         },
     ]
-    mirrors = generate_mirror_urls(regions)
+    mirrors = am.generate_mirror_urls(regions)
 
     assert "eastus" in mirrors
     assert mirrors["eastus"][
@@ -99,7 +99,7 @@ def test_transform_azure_mirrors(tmp_path):
         yaml.dump(existing_mirrors, f)
 
     # Run transformation
-    result = transform_azure_mirrors(str(metadata_file), str(mirrors_file),
+    result = am.transform_azure_mirrors(str(metadata_file), str(mirrors_file),
                                      str(output_file))
 
     # Verify results
@@ -115,13 +115,13 @@ def test_transform_azure_mirrors(tmp_path):
 
 def test_transform_azure_mirrors_error_handling():
     with pytest.raises(FileNotFoundError):
-        transform_azure_mirrors("nonexistent_metadata.yaml",
+        am.transform_azure_mirrors("nonexistent_metadata.yaml",
                                 "nonexistent_mirrors.yaml")
 
 
 def test_parse_args_defaults():
     """Test parse_args with default arguments."""
-    args = parse_args([])
+    args = am.parse_args([])
     assert args.metadata == "azure.metadata.yaml"
     assert args.mirrors == "src/rlc_cloud_repos/data/ciq-mirrors.yaml"
     assert args.output is None
@@ -130,9 +130,11 @@ def test_parse_args_defaults():
 
 def test_parse_args_with_values():
     """Test parse_args with custom values."""
-    args = parse_args([
-        "--metadata", "custom.yaml", "--mirrors", "mirrors.yaml", "--output",
-        "out.yaml", "--verify"
+    args = am.parse_args([
+        "--metadata", "custom.yaml",
+        "--mirrors", "mirrors.yaml",
+        "--output", "out.yaml",
+        "--verify"
     ])
     assert args.metadata == "custom.yaml"
     assert args.mirrors == "mirrors.yaml"
@@ -160,10 +162,10 @@ def test_main_success(tmp_path):
     with open(mirrors_file, "w") as f:
         yaml.dump(mirrors, f)
 
-    result = main(
-        ["--metadata",
-         str(metadata_file), "--mirrors",
-         str(mirrors_file)])
+    result = am.main([
+        "--metadata",
+        str(metadata_file), "--mirrors",
+        str(mirrors_file)])
     assert result == 0
 
 
@@ -181,7 +183,7 @@ def test_main_verify_mode(tmp_path):
     with open(mirrors_file, "w") as f:
         yaml.dump(mirrors, f)
 
-    result = main([
+    result = am.main([
         "--metadata",
         str(metadata_file), "--mirrors",
         str(mirrors_file), "--verify"
@@ -191,5 +193,5 @@ def test_main_verify_mode(tmp_path):
 
 def test_main_error_handling():
     """Test main function with invalid files."""
-    result = main(["--metadata", "nonexistent.yaml"])
+    result = am.main(["--metadata", "nonexistent.yaml"])
     assert result == 1
