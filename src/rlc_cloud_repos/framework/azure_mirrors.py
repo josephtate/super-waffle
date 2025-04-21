@@ -79,9 +79,7 @@ def preserve_default_entry(existing_mirrors: Dict[str, Any]) -> Dict[str, str]:
     Returns:
         Default mirror configuration
     """
-    if "azure" in existing_mirrors and "default" in existing_mirrors["azure"]:
-        return existing_mirrors["azure"]["default"]
-    return {"primary": "https://depot.eastus.prod.azure.ciq.com"}
+    return existing_mirrors["azure"]["default"]
 
 
 def transform_azure_mirrors(
@@ -222,4 +220,4 @@ def main(args=None):
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main())  # pragma: no cover

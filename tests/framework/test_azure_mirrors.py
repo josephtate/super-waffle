@@ -188,6 +188,39 @@ def test_main_verify_mode(tmp_path):
     assert result == 1
 
 
+def test_main_verify_mode_no_change(tmp_path):
+    """Test main function in verify mode."""
+    metadata_file = tmp_path / "metadata.yaml"
+    mirrors_file = tmp_path / "mirrors.yaml"
+
+    # Create test files with different content
+    metadata = {"Regions": [{"name": "eastus", "regional_pair": "westus2"}]}
+    mirrors = {
+        "azure": {
+            "eastus": {
+                "primary": "https://depot.eastus.prod.azure.ciq.com",
+                "backup": "https://depot.westus2.prod.azure.ciq.com"
+            },
+            "default": {
+                "primary": "https://depot.eastus.prod.azure.ciq.com",
+                "backup": "https://depot.westus2.prod.azure.ciq.com"
+            }
+        }
+    }
+
+    with open(metadata_file, "w") as f:
+        yaml.dump(metadata, f)
+    with open(mirrors_file, "w") as f:
+        yaml.dump(mirrors, f)
+
+    result = am.main([
+        "--metadata",
+        str(metadata_file), "--mirrors",
+        str(mirrors_file), "--verify"
+    ])
+    assert result == 0
+
+
 def test_main_error_handling():
     """Test main function with invalid files."""
     result = am.main(["--metadata", "nonexistent.yaml"])
