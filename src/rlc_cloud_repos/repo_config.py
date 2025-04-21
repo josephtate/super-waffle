@@ -1,4 +1,3 @@
-
 # src/rlc_cloud_repos/repo_config.py
 from pathlib import Path
 from typing import Any, Dict, Tuple
@@ -36,8 +35,9 @@ def load_mirror_map(yaml_path: str) -> Dict[str, Any]:
         raise ValueError(f"Invalid YAML in mirror map: {e}")
 
 
-def select_mirror(metadata: Dict[str, str],
-                  mirror_map: Dict[str, Any]) -> Tuple[str, str]:
+def select_mirror(
+    metadata: Dict[str, str], mirror_map: Dict[str, Any]
+) -> Tuple[str, str]:
     """
     Chooses the best primary and backup mirror URLs for the given cloud metadata.
 
@@ -49,20 +49,34 @@ def select_mirror(metadata: Dict[str, str],
 
     # Set up our fallback fallbacks
     # We do not use default values here because we want this to fail in tests if we have a bad file. We must always have a default with primary and backup values set.
-    default_primary = mirror_map.get("default").get("primary")
-    default_backup = mirror_map.get("default").get("backup")
+    try:
+        default_primary = mirror_map["default"]["primary"]
+        default_backup = mirror_map["default"]["backup"]
+    except KeyError as e:
+        log_and_print(f"Missing default mirror values: {e}", level="error")
+        raise ValueError(
+            "Mirror map must have a default entry with primary and backup values set."
+        )
 
-    log_and_print(f"Selecting mirror for provider={provider}, region={region}", level="info")
+    log_and_print(
+        f"Selecting mirror for provider={provider}, region={region}", level="info"
+    )
 
     if provider in mirror_map:
+        # The provider was located in the mirror map
         provider_map = mirror_map[provider]
         if region in provider_map:
+            # the region was located in the provider map
             region_map = provider_map.get(region, {})
         else:
+            # the region was not located in the provider map, use the default for the provider
             region_map = provider_map.get("default", {})
         return region_map.get("primary", default_primary), region_map.get(
-            "backup", default_backup)
+            "backup", default_backup
+        )
 
     else:
-        log_and_print(f"Provider {provider} not found, using default values", level="info")
+        log_and_print(
+            f"Provider {provider} not found, using default values", level="info"
+        )
         return default_primary, default_backup

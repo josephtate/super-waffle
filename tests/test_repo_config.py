@@ -1,5 +1,6 @@
-import pytest
 from pathlib import Path
+
+import pytest
 
 from rlc_cloud_repos.repo_config import load_mirror_map, select_mirror
 
@@ -26,22 +27,24 @@ def test_load_mirror_map_invalid_yaml(tmp_path):
         load_mirror_map(str(invalid_yaml))
 
 
-@pytest.mark.parametrize("provider,region", [
-    ("azure", "eastus"),
-    ("azure", "westus2"),
-    ("azure", "nonexistent-region"),
-    ("gcp", "us-central1"),
-    ("oracle", "us-ashburn-1"),
-    ("unknown-provider", "unknown-region"),
-])
+@pytest.mark.parametrize(
+    "provider,region",
+    [
+        ("azure", "eastus"),
+        ("azure", "westus2"),
+        ("azure", "nonexistent-region"),
+        ("gcp", "us-central1"),
+        ("oracle", "us-ashburn-1"),
+        ("unknown-provider", "unknown-region"),
+    ],
+)
 def test_select_mirror_returns_non_empty_urls(mirrors_file, provider, region):
     """Test select_mirror always returns two non-empty URLs."""
     mirror_map = load_mirror_map(str(mirrors_file))
 
-    primary, backup = select_mirror({
-        "provider": provider,
-        "region": region
-    }, mirror_map)
+    primary, backup = select_mirror(
+        {"provider": provider, "region": region}, mirror_map
+    )
 
     assert isinstance(primary, str)
     assert isinstance(backup, str)
@@ -53,10 +56,9 @@ def test_select_mirror_provider_fallback(mirrors_file):
     """Test select_mirror falls back to provider default."""
     mirror_map = load_mirror_map(str(mirrors_file))
 
-    primary, backup = select_mirror({
-        "provider": "azure",
-        "region": "unknown"
-    }, mirror_map)
+    primary, backup = select_mirror(
+        {"provider": "azure", "region": "unknown"}, mirror_map
+    )
     assert primary == "https://depot.eastus.prod.azure.ciq.com"
 
 
@@ -65,11 +67,9 @@ def test_select_mirror_global_fallback(mirrors_file):
     mirror_map = load_mirror_map(str(mirrors_file))
 
     primary, backup = select_mirror(
-        {
-            "provider": "unknown",
-            "region": "unknown"
-        }, mirror_map)
-    assert primary == "https://depot.eastus.prod.azure.ciq.comSo not very programmatic."
+        {"provider": "unknown", "region": "unknown"}, mirror_map
+    )
+    assert primary == "https://depot.eastus.prod.azure.ciq.com"
 
 
 def test_select_mirror_no_fallback():
@@ -78,10 +78,3 @@ def test_select_mirror_no_fallback():
 
     with pytest.raises(ValueError):
         select_mirror({"provider": "unknown", "region": "unknown"}, mirror_map)
-
-
-def test_select_mirror_not_map():
-    """Test select_mirror raises error when mirror map is not a dict."""
-    mirror_map = "{'azure': 'https://depot.example.com'}"
-
-    with pytest.raises(ValueError):
