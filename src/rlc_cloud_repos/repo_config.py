@@ -11,9 +11,6 @@ from rlc_cloud_repos.log_utils import log_and_print
 
 logger = logging.getLogger(__name__)
 
-MARKERFILE = "/etc/rlc-cloud-repos/.configured"
-DEFAULT_MIRROR_PATH = "/usr/share/rlc-cloud-repos/ciq-mirrors.yaml"
-
 
 def load_mirror_map(yaml_path: Optional[str] = None) -> Dict[str, Any]:
     """
@@ -29,7 +26,7 @@ def load_mirror_map(yaml_path: Optional[str] = None) -> Dict[str, Any]:
         FileNotFoundError: If file does not exist.
         ValueError: If YAML is invalid.
     """
-    yaml_path = yaml_path or os.getenv("RLC_MIRROR_MAP_PATH") or DEFAULT_MIRROR_PATH
+    yaml_path = yaml_path
     path = Path(yaml_path)
 
     if not path.exists():
@@ -44,9 +41,8 @@ def load_mirror_map(yaml_path: Optional[str] = None) -> Dict[str, Any]:
         raise ValueError(f"Invalid YAML in mirror map: {e}")
 
 
-def select_mirror(
-    metadata: Dict[str, str], mirror_map: Dict[str, Any]
-) -> Tuple[str, str]:
+def select_mirror(metadata: Dict[str, str],
+                  mirror_map: Dict[str, Any]) -> Tuple[str, str]:
     """
     Chooses the best primary and backup mirror URLs for the given cloud metadata.
 
@@ -56,7 +52,8 @@ def select_mirror(
     provider = metadata["provider"].lower()
     region = metadata["region"]
 
-    logger.info("Selecting mirror for provider=%s, region=%s", provider, region)
+    logger.info("Selecting mirror for provider=%s, region=%s", provider,
+                region)
 
     provider_map = mirror_map.get(provider, {})
     if isinstance(provider_map, dict):
@@ -66,7 +63,8 @@ def select_mirror(
 
         default_map = provider_map.get("default")
         if isinstance(default_map, dict):
-            return default_map.get("primary", ""), default_map.get("backup", "")
+            return default_map.get("primary",
+                                   ""), default_map.get("backup", "")
         elif isinstance(default_map, str):
             return default_map, ""
 
@@ -76,5 +74,7 @@ def select_mirror(
     elif isinstance(fallback, str):
         return fallback, ""
 
-    logger.error("No mirror found for provider=%s, region=%s", provider, region)
-    raise ValueError(f"No mirror found for provider={provider}, region={region}")
+    logger.error("No mirror found for provider=%s, region=%s", provider,
+                 region)
+    raise ValueError(
+        f"No mirror found for provider={provider}, region={region}")
