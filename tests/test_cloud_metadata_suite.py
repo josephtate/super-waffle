@@ -104,7 +104,8 @@ def test_cloud_metadata_handles_subprocess_error(monkeypatch):
 
     side_effect = subprocess.CalledProcessError(1, "cloud-init", "test error")
 
-    monkeypatch.setattr("subprocess.check_output", side_effect=side_effect)
+    monkeypatch.setattr("subprocess.check_output",
+                        MagicMock(side_effect=side_effect))
 
     with pytest.raises(RuntimeError,
                        match="cloud-init must be available and functional"):
