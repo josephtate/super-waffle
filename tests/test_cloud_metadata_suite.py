@@ -8,7 +8,7 @@ This module validates:
 - YUM repo config generation
 """
 
-import os
+import subprocess
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -19,9 +19,8 @@ from rlc_cloud_repos.dnf_vars import ensure_all_dnf_vars
 from rlc_cloud_repos.log_utils import log_and_print
 from rlc_cloud_repos.repo_config import load_mirror_map, select_mirror
 
-MIRROR_FIXTURES = (
-    Path(__file__).parent.parent / "src/rlc_cloud_repos/data/ciq-mirrors.yaml"
-)
+MIRROR_FIXTURES = (Path(__file__).parent.parent /
+                   "src/rlc_cloud_repos/data/ciq-mirrors.yaml")
 
 
 @pytest.mark.parametrize(
@@ -34,9 +33,8 @@ MIRROR_FIXTURES = (
         ("unknown", "fallback-region"),
     ],
 )
-def test_cloud_metadata_and_mirror(
-    monkeypatch, mirrors_file, expected_provider, expected_region
-):
+def test_cloud_metadata_and_mirror(monkeypatch, mirrors_file,
+                                   expected_provider, expected_region):
     """
     Validates that cloud metadata and mirror resolution behave as expected.
     """
@@ -48,8 +46,8 @@ def test_cloud_metadata_and_mirror(
             return expected_region
 
     monkeypatch.setattr(
-        "rlc_cloud_repos.cloud_metadata.subprocess.check_output", fake_check_output
-    )
+        "rlc_cloud_repos.cloud_metadata.subprocess.check_output",
+        fake_check_output)
     # Use setattr to patch the default path constant directly
     mock_mirror_path = str(mirrors_file)
     # Clear potential env var override to ensure setattr is effective
@@ -73,7 +71,10 @@ def test_dnf_vars_creation_and_backup(monkeypatch, mirrors_file, tmp_path):
 
     monkeypatch.setattr(
         "rlc_cloud_repos.cloud_metadata.subprocess.check_output",
-        lambda cmd, text=True: {"cloud_name": "aws", "region": "us-west-2"}[cmd[-1]],
+        lambda cmd, text=True: {
+            "cloud_name": "aws",
+            "region": "us-west-2"
+        }[cmd[-1]],
     )
 
     metadata = get_cloud_metadata()
@@ -100,12 +101,13 @@ def test_cloud_metadata_returns_dict(monkeypatch):
 
 def test_cloud_metadata_handles_subprocess_error(monkeypatch):
     """Test that get_cloud_metadata properly handles subprocess errors."""
-    def raise_error(*args, **kwargs):
-        raise subprocess.CalledProcessError(1, "cloud-init", "test error")
-    
-    monkeypatch.setattr("subprocess.check_output", raise_error)
-    
-    with pytest.raises(RuntimeError, match="cloud-init must be available and functional"):
+
+    side_effect = subprocess.CalledProcessError(1, "cloud-init", "test error")
+
+    monkeypatch.setattr("subprocess.check_output", side_effect=side_effect)
+
+    with pytest.raises(RuntimeError,
+                       match="cloud-init must be available and functional"):
         get_cloud_metadata()
 
 
@@ -123,8 +125,10 @@ def test_metadata_file_for_missing_values(mirrors_file):
 
     # The mirror map must provide a default provider section with primary and backup values
     assert "default" in mirror_map, "No default section found in the mirror map"
-    assert "primary" in mirror_map["default"], "No primary URL found in default section"
-    assert "backup" in mirror_map["default"], "No backup URL found in default section"
+    assert "primary" in mirror_map[
+        "default"], "No primary URL found in default section"
+    assert "backup" in mirror_map[
+        "default"], "No backup URL found in default section"
     mirror_map.pop("default")
 
     for key, value in mirror_map.items():
