@@ -98,3 +98,87 @@ def test_transform_azure_mirrors(tmp_path):
 def test_transform_azure_mirrors_error_handling():
     with pytest.raises(FileNotFoundError):
         transform_azure_mirrors("nonexistent_metadata.yaml", "nonexistent_mirrors.yaml")
+
+
+def test_parse_args_defaults():
+    """Test parse_args with default arguments."""
+    args = parse_args([])
+    assert args.metadata == "azure.metadata.yaml"
+    assert args.mirrors == "src/rlc_cloud_repos/data/ciq-mirrors.yaml"
+    assert args.output is None
+    assert not args.verify
+
+
+def test_parse_args_with_values():
+    """Test parse_args with custom values."""
+    args = parse_args([
+        "--metadata", "custom.yaml",
+        "--mirrors", "mirrors.yaml",
+        "--output", "out.yaml",
+        "--verify"
+    ])
+    assert args.metadata == "custom.yaml"
+    assert args.mirrors == "mirrors.yaml"
+    assert args.output == "out.yaml"
+    assert args.verify
+
+
+def test_main_success(tmp_path):
+    """Test main function with valid files."""
+    metadata_file = tmp_path / "metadata.yaml"
+    mirrors_file = tmp_path / "mirrors.yaml"
+    
+    # Create test files
+    metadata = {
+        "Regions": [
+            {"name": "eastus", "regional_pair": "westus2"}
+        ]
+    }
+    mirrors = {
+        "azure": {"default": {"primary": "https://depot.eastus.prod.azure.ciq.com"}}
+    }
+    
+    with open(metadata_file, "w") as f:
+        yaml.dump(metadata, f)
+    with open(mirrors_file, "w") as f:
+        yaml.dump(mirrors, f)
+    
+    result = main([
+        "--metadata", str(metadata_file),
+        "--mirrors", str(mirrors_file)
+    ])
+    assert result == 0
+
+
+def test_main_verify_mode(tmp_path):
+    """Test main function in verify mode."""
+    metadata_file = tmp_path / "metadata.yaml"
+    mirrors_file = tmp_path / "mirrors.yaml"
+    
+    # Create test files with different content
+    metadata = {
+        "Regions": [
+            {"name": "eastus", "regional_pair": "westus2"}
+        ]
+    }
+    mirrors = {
+        "azure": {"default": {"primary": "https://old.url.com"}}
+    }
+    
+    with open(metadata_file, "w") as f:
+        yaml.dump(metadata, f)
+    with open(mirrors_file, "w") as f:
+        yaml.dump(mirrors, f)
+    
+    result = main([
+        "--metadata", str(metadata_file),
+        "--mirrors", str(mirrors_file),
+        "--verify"
+    ])
+    assert result == 1
+
+
+def test_main_error_handling():
+    """Test main function with invalid files."""
+    result = main(["--metadata", "nonexistent.yaml"])
+    assert result == 1
