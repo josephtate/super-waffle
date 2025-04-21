@@ -2,7 +2,6 @@
 
 import sys
 from typing import Any, Dict, List, Optional
-import subprocess
 import yaml
 
 try:
