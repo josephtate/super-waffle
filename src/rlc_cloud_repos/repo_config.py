@@ -1,11 +1,11 @@
+
 # src/rlc_cloud_repos/repo_config.py
-import logging
 from pathlib import Path
 from typing import Any, Dict, Tuple
 
 import yaml
 
-logger = logging.getLogger(__name__)
+from rlc_cloud_repos.log_utils import log_and_print
 
 
 def load_mirror_map(yaml_path: str) -> Dict[str, Any]:
@@ -25,14 +25,14 @@ def load_mirror_map(yaml_path: str) -> Dict[str, Any]:
     path = Path(yaml_path)
 
     if not path.exists():
-        logger.error("Mirror YAML not found at %s", yaml_path)
+        log_and_print(f"Mirror YAML not found at {yaml_path}", level="error")
         raise FileNotFoundError(f"Mirror config YAML not found at {yaml_path}")
 
     try:
         with path.open("r", encoding="utf-8") as f:
             return yaml.safe_load(f)
     except yaml.YAMLError as e:
-        logger.exception("YAML parsing error")
+        log_and_print("YAML parsing error", level="error")
         raise ValueError(f"Invalid YAML in mirror map: {e}")
 
 
@@ -52,8 +52,7 @@ def select_mirror(metadata: Dict[str, str],
     default_primary = mirror_map.get("default").get("primary")
     default_backup = mirror_map.get("default").get("backup")
 
-    logger.info("Selecting mirror for provider=%s, region=%s", provider,
-                region)
+    log_and_print(f"Selecting mirror for provider={provider}, region={region}", level="info")
 
     if provider in mirror_map:
         provider_map = mirror_map[provider]
@@ -65,5 +64,5 @@ def select_mirror(metadata: Dict[str, str],
             "backup", default_backup)
 
     else:
-        logger.debug("Provider %s not found, using default values", provider)
+        log_and_print(f"Provider {provider} not found, using default values", level="info")
         return default_primary, default_backup
