@@ -19,7 +19,7 @@ from rlc_cloud_repos.dnf_vars import ensure_all_dnf_vars
 from rlc_cloud_repos.log_utils import log_and_print
 from rlc_cloud_repos.repo_config import load_mirror_map, select_mirror
 
-FIXTURES_DIR = Path(__file__).parent.parent / "fixtures"
+FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
 
 @pytest.mark.parametrize(
