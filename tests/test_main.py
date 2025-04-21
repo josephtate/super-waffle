@@ -13,10 +13,7 @@ def mock_get_cloud_metadata(monkeypatch, request):
     if "test_cloud_metadata_suite" not in request.node.nodeid:
         monkeypatch.setattr(
             "rlc_cloud_repos.main.get_cloud_metadata",
-            lambda: {
-                "provider": "mock",
-                "region": "mock-region"
-            },
+            lambda: {"provider": "mock", "region": "mock-region"},
         )
 
 
@@ -50,16 +47,14 @@ def test_main_respects_marker_file(tmp_path, marker):
     assert result == 0
 
 
-def test_main_creates_marker_file(tmp_path, dnf_vars_dir, marker,
-                                  mirrors_file):
+def test_main_creates_marker_file(tmp_path, dnf_vars_dir, marker, mirrors_file):
     """Test main creates marker file after successful run."""
     result = main([])
     assert result == 0
     assert marker.exists()
 
 
-def test_main_with_custom_mirror_file(tmp_path, dnf_vars_dir, marker,
-                                      mirrors_file):
+def test_main_with_custom_mirror_file(tmp_path, dnf_vars_dir, marker, mirrors_file):
     """Test main with custom mirror file path."""
     result = main(["--mirror-file", str(mirrors_file)])
     assert result == 0
@@ -75,8 +70,7 @@ def test_main_handles_configuration_error(tmp_path, monkeypatch):
     assert result == 1
 
 
-def test_configure_repos_writes_touchfile(tmp_path, dnf_vars_dir, marker,
-                                          mirrors_file):
+def test_configure_repos_writes_touchfile(tmp_path, dnf_vars_dir, marker, mirrors_file):
     """Test _configure_repos writes marker file."""
     _configure_repos(str(mirrors_file))
     assert marker.exists()

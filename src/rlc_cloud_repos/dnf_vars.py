@@ -50,8 +50,7 @@ def _write_dnf_var(basepath: Path, name: str, value: str):
         # Backup
         backup_path = path.with_suffix(path.suffix + BACKUP_SUFFIX)
         path.rename(backup_path)
-        logger.info(
-            f"Backed up existing DNF var '{name}' to '{backup_path.name}'")
+        logger.info(f"Backed up existing DNF var '{name}' to '{backup_path.name}'")
 
     try:
         path.write_text(f"{value}\n")

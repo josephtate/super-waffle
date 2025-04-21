@@ -41,17 +41,16 @@ def extract_active_regions(metadata: Dict[str, Any]) -> List[Dict[str, str]]:
     for region in metadata.get("Regions", []):
         # Skip commented out regions (they won't be in the list)
         if region and "name" in region:
-            active_regions.append({
-                "name":
-                region["name"],
-                "regional_pair":
-                region.get("regional_pair", ""),
-            })
+            active_regions.append(
+                {
+                    "name": region["name"],
+                    "regional_pair": region.get("regional_pair", ""),
+                }
+            )
     return active_regions
 
 
-def generate_mirror_urls(
-        regions: List[Dict[str, str]]) -> Dict[str, Dict[str, str]]:
+def generate_mirror_urls(regions: List[Dict[str, str]]) -> Dict[str, Dict[str, str]]:
     """Generate mirror URLs for each active region.
 
     Args:
@@ -87,9 +86,8 @@ def preserve_default_entry(existing_mirrors: Dict[str, Any]) -> Dict[str, str]:
 
 
 def transform_azure_mirrors(
-        metadata_path: str,
-        mirrors_path: str,
-        output_path: Optional[str] = None) -> Dict[str, Any]:
+    metadata_path: str, mirrors_path: str, output_path: Optional[str] = None
+) -> Dict[str, Any]:
     """Transform Azure metadata to mirror format.
 
     Args:
@@ -147,24 +145,21 @@ def parse_args(args=None):
         "-c",
         "--config",
         is_config_file=True,
-        help=
-        "Config file path (can also use ~/.config/rlc-azure-mirrors.conf or /etc/rlc-azure-mirrors.conf)",
+        help="Config file path (can also use ~/.config/rlc-azure-mirrors.conf or /etc/rlc-azure-mirrors.conf)",
     )
 
     parser.add_argument(
         "--metadata",
         env_var="AZURE_METADATA_PATH",
         default="azure.metadata.yaml",
-        help=
-        "Path to the Azure metadata YAML file (default: azure.metadata.yaml)",
+        help="Path to the Azure metadata YAML file (default: azure.metadata.yaml)",
     )
 
     parser.add_argument(
         "--mirrors",
         env_var="CIQ_MIRRORS_PATH",
         default="src/rlc_cloud_repos/data/ciq-mirrors.yaml",
-        help=
-        "Path to the existing mirrors YAML file (default: src/rlc_cloud_repos/data/ciq-mirrors.yaml)",
+        help="Path to the existing mirrors YAML file (default: src/rlc_cloud_repos/data/ciq-mirrors.yaml)",
     )
 
     parser.add_argument(

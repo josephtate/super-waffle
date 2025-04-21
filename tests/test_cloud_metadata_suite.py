@@ -19,8 +19,9 @@ from rlc_cloud_repos.dnf_vars import ensure_all_dnf_vars
 from rlc_cloud_repos.log_utils import log_and_print
 from rlc_cloud_repos.repo_config import load_mirror_map, select_mirror
 
-MIRROR_FIXTURES = Path(
-    __file__).parent.parent / "src/rlc_cloud_repos/data/ciq-mirrors.yaml"
+MIRROR_FIXTURES = (
+    Path(__file__).parent.parent / "src/rlc_cloud_repos/data/ciq-mirrors.yaml"
+)
 
 
 @pytest.mark.parametrize(
@@ -33,8 +34,9 @@ MIRROR_FIXTURES = Path(
         ("unknown", "fallback-region"),
     ],
 )
-def test_cloud_metadata_and_mirror(monkeypatch, mirrors_file,
-                                   expected_provider, expected_region):
+def test_cloud_metadata_and_mirror(
+    monkeypatch, mirrors_file, expected_provider, expected_region
+):
     """
     Validates that cloud metadata and mirror resolution behave as expected.
     """
@@ -47,8 +49,8 @@ def test_cloud_metadata_and_mirror(monkeypatch, mirrors_file,
         return "fallback-id"
 
     monkeypatch.setattr(
-        "rlc_cloud_repos.cloud_metadata.subprocess.check_output",
-        fake_check_output)
+        "rlc_cloud_repos.cloud_metadata.subprocess.check_output", fake_check_output
+    )
     # Use setattr to patch the default path constant directly
     mock_mirror_path = str(mirrors_file)
     # Clear potential env var override to ensure setattr is effective
@@ -72,10 +74,7 @@ def test_dnf_vars_creation_and_backup(monkeypatch, mirrors_file, tmp_path):
 
     monkeypatch.setattr(
         "rlc_cloud_repos.cloud_metadata.subprocess.check_output",
-        lambda cmd, text=True: {
-            "cloud_name": "aws",
-            "region": "us-west-2"
-        }[cmd[-1]],
+        lambda cmd, text=True: {"cloud_name": "aws", "region": "us-west-2"}[cmd[-1]],
     )
 
     metadata = get_cloud_metadata()
@@ -107,3 +106,31 @@ def test_logger_fallback_and_log_and_print(monkeypatch):
     mock_logger.info.assert_called_with("Test log output")
     log_and_print("Test log output", level="info")
     mock_logger.info.assert_called_with("Test log output")
+
+
+def test_metadata_file_for_missing_values(mirrors_file):
+    mirror_map = load_mirror_map(str(mirrors_file))
+
+    # The mirror map must provide a default provider section with primary and backup values
+    assert "default" in mirror_map, "No default section found in the mirror map"
+    assert "primary" in mirror_map["default"], "No primary URL found in default section"
+    assert "backup" in mirror_map["default"], "No backup URL found in default section"
+    mirror_map.pop("default")
+
+    for key, value in mirror_map.items():
+        # Each provider must provide a default with primary and backup values
+        assert "default" in value, f"No default section found in provider '{key}'"
+        assert (
+            "primary" in value["default"]
+        ), f"No primary URL found in default section of provider '{key}'"
+        assert (
+            "backup" in value["default"]
+        ), f"No backup URL found in default section of provider '{key}'"
+        value.pop("default")
+        for region, r_map in value.items():
+            assert (
+                "primary" in r_map
+            ), f"No primary URL found in region '{region}' of provider '{key}'"
+            assert (
+                "backup" in r_map
+            ), f"No backup URL found in region '{region}' of provider '{key}'"
