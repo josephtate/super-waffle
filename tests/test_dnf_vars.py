@@ -80,3 +80,15 @@ def test_ensure_all_dnf_vars_changes(dnf_dir):
     assert (dnf_dir / f"baseurl2{BACKUP_SUFFIX}").exists()
     assert (dnf_dir / f"baseurl1{BACKUP_SUFFIX}").read_text().strip() == "old_primary"
     assert (dnf_dir / f"baseurl2{BACKUP_SUFFIX}").read_text().strip() == "old_backup"
+def test_write_dnf_var_non_writable_dir(dnf_dir):
+    """Test writing DNF var to a non-writable directory."""
+    # Make directory read-only
+    dnf_dir.chmod(0o444)
+
+    with pytest.raises(Exception) as exc_info:
+        _write_dnf_var(dnf_dir, "test", "value")
+    
+    assert "Cannot write to DNF var" in str(exc_info.value)
+
+    # Restore permissions for cleanup
+    dnf_dir.chmod(0o755)
