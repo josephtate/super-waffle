@@ -8,13 +8,12 @@ import yaml
 logger = logging.getLogger(__name__)
 
 
-def load_mirror_map(yaml_path: Optional[str] = None) -> Dict[str, Any]:
-
+def load_mirror_map(yaml_path: str) -> Dict[str, Any]:
     """
     Loads the YAML mirror map config.
 
     Args:
-        yaml_path (str, optional): Custom path to YAML config.
+        yaml_path (str): Path to YAML config.
 
     Returns:
         Dict[str, Any]: Mirror map dictionary.
