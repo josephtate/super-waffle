@@ -1,4 +1,3 @@
-
 import pytest
 from pathlib import Path
 
@@ -25,7 +24,7 @@ def test_write_dnf_var_existing_same_value(dnf_dir):
     """Test writing a DNF var when file exists with same value"""
     path = dnf_dir / "test"
     path.write_text("value\n")
-    
+
     _write_dnf_var(dnf_dir, "test", "value")
     assert path.exists()
     assert not (path.parent / f"test{BACKUP_SUFFIX}").exists()
@@ -36,21 +35,22 @@ def test_write_dnf_var_existing_different_value(dnf_dir):
     """Test writing a DNF var when file exists with different value"""
     path = dnf_dir / "test"
     path.write_text("old_value\n")
-    
+
     _write_dnf_var(dnf_dir, "test", "new_value")
     assert path.exists()
     assert (path.parent / f"test{BACKUP_SUFFIX}").exists()
     assert path.read_text().strip() == "new_value"
-    assert (path.parent / f"test{BACKUP_SUFFIX}").read_text().strip() == "old_value"
+    assert (path.parent /
+            f"test{BACKUP_SUFFIX}").read_text().strip() == "old_value"
 
 
 def test_ensure_all_dnf_vars(dnf_dir):
     """Test ensuring all DNF vars are set"""
     primary = "https://primary.mirror"
     backup = "https://backup.mirror"
-    
+
     ensure_all_dnf_vars(dnf_dir, primary, backup)
-    
+
     assert (dnf_dir / "baseurl1").read_text().strip() == primary
     assert (dnf_dir / "baseurl2").read_text().strip() == backup
 
@@ -59,12 +59,12 @@ def test_ensure_all_dnf_vars_idempotent(dnf_dir):
     """Test ensuring all DNF vars doesn't create backups if values unchanged"""
     primary = "https://primary.mirror"
     backup = "https://backup.mirror"
-    
+
     # First call
     ensure_all_dnf_vars(dnf_dir, primary, backup)
     # Second call
     ensure_all_dnf_vars(dnf_dir, primary, backup)
-    
+
     assert not (dnf_dir / f"baseurl1{BACKUP_SUFFIX}").exists()
     assert not (dnf_dir / f"baseurl2{BACKUP_SUFFIX}").exists()
 
@@ -75,11 +75,15 @@ def test_ensure_all_dnf_vars_changes(dnf_dir):
     ensure_all_dnf_vars(dnf_dir, "old_primary", "old_backup")
     # Second call with different values
     ensure_all_dnf_vars(dnf_dir, "new_primary", "new_backup")
-    
+
     assert (dnf_dir / f"baseurl1{BACKUP_SUFFIX}").exists()
     assert (dnf_dir / f"baseurl2{BACKUP_SUFFIX}").exists()
-    assert (dnf_dir / f"baseurl1{BACKUP_SUFFIX}").read_text().strip() == "old_primary"
-    assert (dnf_dir / f"baseurl2{BACKUP_SUFFIX}").read_text().strip() == "old_backup"
+    assert (dnf_dir /
+            f"baseurl1{BACKUP_SUFFIX}").read_text().strip() == "old_primary"
+    assert (dnf_dir /
+            f"baseurl2{BACKUP_SUFFIX}").read_text().strip() == "old_backup"
+
+
 def test_write_dnf_var_non_writable_dir(dnf_dir):
     """Test writing DNF var to a non-writable directory."""
     # Make directory read-only
@@ -87,7 +91,7 @@ def test_write_dnf_var_non_writable_dir(dnf_dir):
 
     with pytest.raises(Exception) as exc_info:
         _write_dnf_var(dnf_dir, "test", "value")
-    
+
     assert "Cannot write to DNF var" in str(exc_info.value)
 
     # Restore permissions for cleanup
