@@ -98,6 +98,17 @@ def test_cloud_metadata_returns_dict(monkeypatch):
     assert result["region"] == "us-west-2"
 
 
+def test_cloud_metadata_handles_subprocess_error(monkeypatch):
+    """Test that get_cloud_metadata properly handles subprocess errors."""
+    def raise_error(*args, **kwargs):
+        raise subprocess.CalledProcessError(1, "cloud-init", "test error")
+    
+    monkeypatch.setattr("subprocess.check_output", raise_error)
+    
+    with pytest.raises(RuntimeError, match="cloud-init must be available and functional"):
+        get_cloud_metadata()
+
+
 def test_logger_fallback_and_log_and_print(monkeypatch):
     mock_logger = MagicMock()
     monkeypatch.setattr("rlc_cloud_repos.log_utils.logger", mock_logger)
