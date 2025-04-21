@@ -1,18 +1,15 @@
 # src/rlc_cloud_repos/repo_config.py
 import logging
-import os
 from pathlib import Path
-from shutil import copyfile
 from typing import Any, Dict, Optional, Tuple
 
 import yaml
-
-from rlc_cloud_repos.log_utils import log_and_print
 
 logger = logging.getLogger(__name__)
 
 
 def load_mirror_map(yaml_path: Optional[str] = None) -> Dict[str, Any]:
+
     """
     Loads the YAML mirror map config.
 
@@ -26,7 +23,6 @@ def load_mirror_map(yaml_path: Optional[str] = None) -> Dict[str, Any]:
         FileNotFoundError: If file does not exist.
         ValueError: If YAML is invalid.
     """
-    yaml_path = yaml_path
     path = Path(yaml_path)
 
     if not path.exists():
