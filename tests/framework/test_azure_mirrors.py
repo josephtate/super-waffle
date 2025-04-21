@@ -8,9 +8,8 @@ from rlc_cloud_repos.framework import azure_mirrors as am
 FIXTURES_DIR = Path(__file__).parent.parent / "fixtures"
 
 
-def test_load_yaml_file():
-    yaml_path = FIXTURES_DIR / "mock-mirrors.yaml"
-    data = am.load_yaml_file(str(yaml_path))
+def test_load_yaml_file(mirrors_file):
+    data = am.load_yaml_file(str(mirrors_file))
     assert isinstance(data, dict)
     assert "azure" in data
 
@@ -100,7 +99,7 @@ def test_transform_azure_mirrors(tmp_path):
 
     # Run transformation
     result = am.transform_azure_mirrors(str(metadata_file), str(mirrors_file),
-                                     str(output_file))
+                                        str(output_file))
 
     # Verify results
     assert "azure" in result
@@ -116,7 +115,7 @@ def test_transform_azure_mirrors(tmp_path):
 def test_transform_azure_mirrors_error_handling():
     with pytest.raises(FileNotFoundError):
         am.transform_azure_mirrors("nonexistent_metadata.yaml",
-                                "nonexistent_mirrors.yaml")
+                                   "nonexistent_mirrors.yaml")
 
 
 def test_parse_args_defaults():
@@ -131,10 +130,8 @@ def test_parse_args_defaults():
 def test_parse_args_with_values():
     """Test parse_args with custom values."""
     args = am.parse_args([
-        "--metadata", "custom.yaml",
-        "--mirrors", "mirrors.yaml",
-        "--output", "out.yaml",
-        "--verify"
+        "--metadata", "custom.yaml", "--mirrors", "mirrors.yaml", "--output",
+        "out.yaml", "--verify"
     ])
     assert args.metadata == "custom.yaml"
     assert args.mirrors == "mirrors.yaml"
@@ -162,10 +159,10 @@ def test_main_success(tmp_path):
     with open(mirrors_file, "w") as f:
         yaml.dump(mirrors, f)
 
-    result = am.main([
-        "--metadata",
-        str(metadata_file), "--mirrors",
-        str(mirrors_file)])
+    result = am.main(
+        ["--metadata",
+         str(metadata_file), "--mirrors",
+         str(mirrors_file)])
     assert result == 0
 
 

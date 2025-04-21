@@ -1,7 +1,7 @@
 # src/rlc_cloud_repos/repo_config.py
 import logging
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Tuple
 
 import yaml
 

@@ -27,8 +27,9 @@ def mirrors_file(tmp_path, monkeypatch):
     """Fixture to create a temporary mirrors file."""
     mirrors_path = tmp_path / "mirrors.yaml"
 
-    # Copy the content from fixtures/mock-mirrors.yaml to mirrors.yaml
-    source_path = Path(__file__).parent / 'fixtures/mock-mirrors.yaml'
+    # Copy the content from the package data to mirrors.yaml
+    source_path = Path(
+        __file__).parent.parent / 'src/rlc_cloud_repos/data/ciq-mirrors.yaml'
     shutil.copy(source_path, mirrors_path)
 
     monkeypatch.setattr("rlc_cloud_repos.main.DEFAULT_MIRROR_PATH",

@@ -123,10 +123,14 @@ azure:
 
 gcp:
   default:
-    primary: https://mirror.eastus.azure.ciq.dev
-    backup: https://mirror.westus2.azure.ciq.dev
+    primary: https://depot.eastus.azure.ciq.com
+    backup: https://depot.westus2.azure.ciq.com
 
 oracle:
   default:
     primary: https://oracle.depot.ciq.com
-    backup: https://mirror.eastus.azure.ciq.dev
+    backup: https://depot.eastus.azure.ciq.com
+
+default:
+  primary: https://depot.eastus.azure.ciq.com
+  backup: https://depot.westus2.azure.ciq.com

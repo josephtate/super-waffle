@@ -19,7 +19,8 @@ from rlc_cloud_repos.dnf_vars import ensure_all_dnf_vars
 from rlc_cloud_repos.log_utils import log_and_print
 from rlc_cloud_repos.repo_config import load_mirror_map, select_mirror
 
-FIXTURES_DIR = Path(__file__).parent / "fixtures"
+MIRROR_FIXTURES = Path(
+    __file__).parent.parent / "src/rlc_cloud_repos/data/ciq-mirrors.yaml"
 
 
 @pytest.mark.parametrize(
@@ -32,8 +33,8 @@ FIXTURES_DIR = Path(__file__).parent / "fixtures"
         ("unknown", "fallback-region"),
     ],
 )
-def test_cloud_metadata_and_mirror(monkeypatch, expected_provider,
-                                   expected_region):
+def test_cloud_metadata_and_mirror(monkeypatch, mirrors_file,
+                                   expected_provider, expected_region):
     """
     Validates that cloud metadata and mirror resolution behave as expected.
     """
@@ -49,7 +50,7 @@ def test_cloud_metadata_and_mirror(monkeypatch, expected_provider,
         "rlc_cloud_repos.cloud_metadata.subprocess.check_output",
         fake_check_output)
     # Use setattr to patch the default path constant directly
-    mock_mirror_path = str(FIXTURES_DIR / "mock-mirrors.yaml")
+    mock_mirror_path = str(mirrors_file)
     # Clear potential env var override to ensure setattr is effective
     metadata = get_cloud_metadata()
     assert metadata["provider"] == expected_provider
@@ -61,13 +62,13 @@ def test_cloud_metadata_and_mirror(monkeypatch, expected_provider,
     assert isinstance(backup, str)
 
 
-def test_dnf_vars_creation_and_backup(monkeypatch, tmp_path):
+def test_dnf_vars_creation_and_backup(monkeypatch, mirrors_file, tmp_path):
     var_dir = tmp_path / "dnf_vars"
     var_dir.mkdir()
     (var_dir / "baseurl1").write_text("original-value")
 
     # Use setattr to patch the default path constant directly
-    mock_mirror_path = str(FIXTURES_DIR / "mock-mirrors.yaml")
+    mock_mirror_path = str(mirrors_file)
 
     monkeypatch.setattr(
         "rlc_cloud_repos.cloud_metadata.subprocess.check_output",

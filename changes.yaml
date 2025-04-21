@@ -1,0 +1,124 @@
+aws:
+  af-south-1:
+    backup: https://depot.us-east-1.prod.ciqws.com
+    primary: https://depot.af-south-1.prod.ciqws.com
+  ap-east-1:
+    backup: https://depot.us-east-1.prod.ciqws.com
+    primary: https://depot.ap-east-1.prod.ciqws.com
+  ap-northeast-1:
+    backup: https://depot.us-east-1.prod.ciqws.com
+    primary: https://depot.ap-northeast-1.prod.ciqws.com
+  ap-northeast-2:
+    backup: https://depot.us-east-1.prod.ciqws.com
+    primary: https://depot.ap-northeast-2.prod.ciqws.com
+  ap-northeast-3:
+    backup: https://depot.us-east-1.prod.ciqws.com
+    primary: https://depot.ap-northeast-3.prod.ciqws.com
+  ap-south-1:
+    backup: https://depot.us-east-1.prod.ciqws.com
+    primary: https://depot.ap-south-1.prod.ciqws.com
+  ap-south-2:
+    backup: https://depot.us-east-1.prod.ciqws.com
+    primary: https://depot.ap-south-2.prod.ciqws.com
+  ap-southeast-1:
+    backup: https://depot.us-east-1.prod.ciqws.com
+    primary: https://depot.ap-southeast-1.prod.ciqws.com
+  ap-southeast-2:
+    backup: https://depot.us-east-1.prod.ciqws.com
+    primary: https://depot.ap-southeast-2.prod.ciqws.com
+  ap-southeast-3:
+    backup: https://depot.us-east-1.prod.ciqws.com
+    primary: https://depot.ap-southeast-3.prod.ciqws.com
+  ap-southeast-4:
+    backup: https://depot.us-east-1.prod.ciqws.com
+    primary: https://depot.ap-southeast-4.prod.ciqws.com
+  ap-southeast-5:
+    backup: https://depot.us-east-1.prod.ciqws.com
+    primary: https://depot.ap-southeast-5.prod.ciqws.com
+  ap-southeast-7:
+    backup: https://depot.us-east-1.prod.ciqws.com
+    primary: https://depot.ap-southeast-7.prod.ciqws.com
+  ca-central-1:
+    backup: https://depot.us-east-1.prod.ciqws.com
+    primary: https://depot.ca-central-1.prod.ciqws.com
+  ca-west-1:
+    backup: https://depot.us-east-1.prod.ciqws.com
+    primary: https://depot.ca-west-1.prod.ciqws.com
+  eu-central-1:
+    backup: https://depot.us-east-1.prod.ciqws.com
+    primary: https://depot.eu-central-1.prod.ciqws.com
+  eu-central-2:
+    backup: https://depot.us-east-1.prod.ciqws.com
+    primary: https://depot.eu-central-2.prod.ciqws.com
+  eu-north-1:
+    backup: https://depot.us-east-1.prod.ciqws.com
+    primary: https://depot.eu-north-1.prod.ciqws.com
+  eu-south-1:
+    backup: https://depot.us-east-1.prod.ciqws.com
+    primary: https://depot.eu-south-1.prod.ciqws.com
+  eu-south-2:
+    backup: https://depot.us-east-1.prod.ciqws.com
+    primary: https://depot.eu-south-2.prod.ciqws.com
+  eu-west-1:
+    backup: https://depot.us-east-1.prod.ciqws.com
+    primary: https://depot.eu-west-1.prod.ciqws.com
+  eu-west-2:
+    backup: https://depot.us-east-1.prod.ciqws.com
+    primary: https://depot.eu-west-2.prod.ciqws.com
+  eu-west-3:
+    backup: https://depot.us-east-1.prod.ciqws.com
+    primary: https://depot.eu-west-3.prod.ciqws.com
+  il-central-1:
+    backup: https://depot.us-east-1.prod.ciqws.com
+    primary: https://depot.il-central-1.prod.ciqws.com
+  me-central-1:
+    backup: https://depot.us-east-1.prod.ciqws.com
+    primary: https://depot.me-central-1.prod.ciqws.com
+  me-south-1:
+    backup: https://depot.us-east-1.prod.ciqws.com
+    primary: https://depot.me-south-1.prod.ciqws.com
+  mx-central-1:
+    backup: https://depot.us-east-1.prod.ciqws.com
+    primary: https://depot.mx-central-1.prod.ciqws.com
+  sa-east-1:
+    backup: https://depot.us-east-1.prod.ciqws.com
+    primary: https://depot.sa-east-1.prod.ciqws.com
+  us-east-1:
+    backup: https://depot.us-east-1.prod.ciqws.com
+    primary: https://depot.us-east-1.prod.ciqws.com
+  us-east-2:
+    backup: https://depot.us-east-1.prod.ciqws.com
+    primary: https://depot.us-east-2.prod.ciqws.com
+  us-west-1:
+    backup: https://depot.us-east-1.prod.ciqws.com
+    primary: https://depot.us-west-1.prod.ciqws.com
+  us-west-2:
+    backup: https://depot.us-east-1.prod.ciqws.com
+    primary: https://depot.us-west-2.prod.ciqws.com
+azure:
+  australiaeast:
+    backup: https://depot.southeastasia.prod.azure.ciq.com
+    primary: https://depot.australiaeast.prod.azure.ciq.com
+  default:
+    abackup: https://depot.westus2.prod.azure.ciq.com
+    primary: https://depot.eastus.prod.azure.ciq.com
+  eastus:
+    backup: https://depot.westus2.prod.azure.ciq.com
+    primary: https://depot.eastus.prod.azure.ciq.com
+  northeurope:
+    backup: https://depot.southeastasia.prod.azure.ciq.com
+    primary: https://depot.northeurope.prod.azure.ciq.com
+  southeastasia:
+    backup: https://depot.northeurope.prod.azure.ciq.com
+    primary: https://depot.southeastasia.prod.azure.ciq.com
+  westus2:
+    backup: https://depot.eastus.prod.azure.ciq.com
+    primary: https://depot.westus2.prod.azure.ciq.com
+gcp:
+  default:
+    backup: https://mirror.westus2.azure.ciq.dev
+    primary: https://mirror.eastus.azure.ciq.dev
+oracle:
+  default:
+    backup: https://mirror.eastus.azure.ciq.dev
+    primary: https://oracle.depot.ciq.com
