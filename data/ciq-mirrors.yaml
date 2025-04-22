@@ -97,7 +97,7 @@ aws:
     backup: https://depot.sa-east-1.prod.ciqws.com
 
 azure:
-  eastus:
+  eastus: &azure_eastus
     primary: https://depot.eastus.prod.azure.ciq.com
     backup: https://depot.westus2.prod.azure.ciq.com
 
@@ -117,20 +117,14 @@ azure:
     primary: https://depot.westus2.prod.azure.ciq.com
     backup: https://depot.eastus.prod.azure.ciq.com
 
-  default:
-    primary: https://depot.eastus.prod.azure.ciq.com
-    abackup: https://depot.westus2.prod.azure.ciq.com
+  default: *azure_eastus
 
 gcp:
-  default:
-    primary: https://depot.eastus.azure.ciq.com
-    backup: https://depot.westus2.azure.ciq.com
+  default: *azure_eastus
 
 oracle:
   default:
     primary: https://oracle.depot.ciq.com
     backup: https://depot.eastus.azure.ciq.com
 
-default:
-  primary: https://depot.eastus.azure.ciq.com
-  backup: https://depot.westus2.azure.ciq.com
+default: *azure_eastus

@@ -31,24 +31,23 @@ ls
 
 %install
 %pyproject_install
-install -Dm0644 src/rlc_cloud_repos/cloud-config/20_rlc-cloud-repos.cfg %{buildroot}/etc/cloud/cloud.cfg.d/20_rlc-cloud-repos.cfg
-install -Dm0644 src/rlc_cloud_repos/data/ciq-mirrors.yaml %{buildroot}/usr/share/rlc-cloud-repos/ciq-mirrors.yaml
+install -Dm0644 cloud-repos/rlc/cloud_repos/cloud-config/20_rlc-cloud-repos.cfg %{buildroot}/etc/cloud/cloud.cfg.d/20_rlc-cloud-repos.cfg
+install -Dm0644 data/ciq-mirrors.yaml %{buildroot}/usr/share/rlc-cloud-repos/ciq-mirrors.yaml
 
 %files
 %license LICENSE
 %doc README.md
 
-# CLI entrypoint (pyproject.toml → console_scripts)
+# CLI entrypoint (console script)
 %{_bindir}/rlc-cloud-repos
 
 # Python package content
-%{python3_sitelib}/rlc_cloud_repos
-%{python3_sitelib}/rlc_cloud_repos-*.dist-info
+%{python3_sitelib}/rlc/
+%{python3_sitelib}/rlc.cloud_repos*.dist-info
 
 # Config and static data
 %config(noreplace) /etc/cloud/cloud.cfg.d/20_rlc-cloud-repos.cfg
 /usr/share/rlc-cloud-repos/ciq-mirrors.yaml
-
 
 %post
 touch /etc/rlc-cloud-repos/.configured

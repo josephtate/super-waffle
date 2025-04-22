@@ -1,7 +1,7 @@
 import pytest
 from pathlib import Path
 
-from rlc_cloud_repos.repo_config import load_mirror_map, select_mirror
+from rlc.cloud_repos.repo_config import load_mirror_map, select_mirror
 
 
 def test_load_mirror_map_success(mirrors_file):
@@ -69,7 +69,7 @@ def test_select_mirror_global_fallback(mirrors_file):
             "provider": "unknown",
             "region": "unknown"
         }, mirror_map)
-    assert primary == "https://default.repo.mock.ciq"
+    assert primary == "https://depot.eastus.prod.azure.ciq.com"
 
 
 def test_select_mirror_no_fallback():

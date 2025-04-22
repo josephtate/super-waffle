@@ -10,14 +10,14 @@
 ## Problem Statement
 Deploying and Running Rocky Linux on multiple cloud providers (AWS, Azure, GCP, OCI) requires custom repository configuration:
 - Mirrors vary per provider and region.
-- Performance demands regional proximity.
+- Network performance and bandwidth metering demand regional proximity.
 - Instance metadata varies widely.
 - Fallbacks when a mirror is unavailable (e.g., AWS instances in `us-west-1` fallback to `us-east-1`).
 - Ensuring Cloud-Init properly integrates the repository configurations during instance boot.
 
 ## Key Benefits
 1. **Zero-Touch Configuration** – Just boot the VM and it configures itself.
-2. **Performance-Aware** – Selects closest available mirror.
+2. **Performance-Aware** – Selects pre-configured available mirror.
 3. **Cloud-Native** – Leverages `cloud-init query`, not hand-coded API logic.
 4. **Dynamic and Safe** – Uses a marker file to prevent reconfig unless explicitly allowed or on package update.
 
@@ -34,15 +34,10 @@ The system is designed as **modular components** that work together to **detect 
 +----------------------------+
            |
            v
-+----------------------------+
-| Detect Cloud Provider      |
-| via cloud-init             |
-+----------------------------+
-           |
-           v
-+----------------------------+
-| Detect Region              |
-+----------------------------+
++--------------------------------+
+| Detect Cloud Provider & Region |
+| via cloud-init                 |
++--------------------------------+
            |
            v
 +----------------------------+
@@ -81,7 +76,7 @@ The system is designed as **modular components** that work together to **detect 
     - Region
 - Maps variables against `ciq-mirrors.yaml` matrix
 - CasC (Configuration As Code) Versioned.
-    - No code changes required for _any_ mirror changes. 
+    - No code changes required for _any_ mirror changes.
 
 ### 🧠 `main.py`
 - Entry point triggered by cloud-init or manual run.
@@ -107,7 +102,7 @@ This will produce a `.tar.gz` source archive in the `dist/` directory, suitable 
 ### 🚀 Manually Trigger Repository Configuration
 
 ```bash
-/usr/local/bin/rlc-cloud-repos
+rlc-cloud-repos
 ```
 
 This will:
@@ -131,13 +126,13 @@ Mirror mapping is handled via a region → mirror YAML file (`ciq-mirrors.yaml`)
 
 ## Configuration
 - Mirror selection logic is data-driven via `ciq-mirrors.yaml`
-- Configuration persists indefinitely until removed/updated. 
+- Configuration persists indefinitely until removed/updated.
 
 ---
 
 ## Development Notes
 - Touch file at `/etc/rlc-cloud-repos/.configured` used to block rerun
-- Removed syslog/journal — logs only to stdout/stderr
+- Logs only to stdout/stderr
 - The included RPM spec (rpm/rlc-cloud-repos.spec) handles the marker file lifecycle:
     1. Creates the marker file on initial install (%post).
     2. Removes the marker file on upgrade (%posttrans) and uninstall (%postun) to allow reconfiguration.
@@ -146,8 +141,9 @@ Mirror mapping is handled via a region → mirror YAML file (`ciq-mirrors.yaml`)
 
 ## 🧠 Development Notes
 ### 🔀 Current Development Branch
-`git@github.com:ctrliq/rlc-cloud-repos.git Branch: dev`
-This is the active branch for development. Use this to track commits and open PRs.
+
+Create branches off of `git@github.com:ctrliq/rlc-cloud-repos.git Branch: main`
+to develop PRs.
 
 ---
 
@@ -157,5 +153,5 @@ This is the active branch for development. Use this to track commits and open PR
 ---
 
 ## **Authors**
-**CIQ Solutions Delivery Engineering Team**  
+**CIQ Solutions Delivery Engineering Team**
 [https://github.com/ctrliq/rlc-cloud-repos](https://github.com/ctrliq/rlc-cloud-repos)

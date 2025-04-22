@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from rlc_cloud_repos.framework import azure_mirrors as am
+from rlc_cloud_repos_framework import azure_mirrors as am
 
 FIXTURES_DIR = Path(__file__).parent.parent / "fixtures"
 

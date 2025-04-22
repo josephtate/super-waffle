@@ -10,13 +10,13 @@ for optimized regional repo access.
 import argparse
 import os
 import sys
-import pytest
 from datetime import datetime
 
-from rlc_cloud_repos.cloud_metadata import get_cloud_metadata
-from rlc_cloud_repos.dnf_vars import ensure_all_dnf_vars
-from rlc_cloud_repos.log_utils import log_and_print, logger, setup_logging
-from rlc_cloud_repos.repo_config import (
+from rlc.cloud_repos.version import __version__ as rlc_version
+from rlc.cloud_repos.cloud_metadata import get_cloud_metadata
+from rlc.cloud_repos.dnf_vars import ensure_all_dnf_vars
+from rlc.cloud_repos.log_utils import log_and_print, logger, setup_logging
+from rlc.cloud_repos.repo_config import (
     load_mirror_map,
     select_mirror,
 )
@@ -94,7 +94,7 @@ def parse_args(args=None):
         Parsed arguments namespace
     """
     parser = argparse.ArgumentParser(
-        description="RLC Cloud Repo Resolver",
+        description="RLC Cloud Repo Resolver version %s" % rlc_version,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument("--mirror-file",

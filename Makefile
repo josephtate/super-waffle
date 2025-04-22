@@ -1,9 +1,9 @@
-VERSION := $(shell python3 -c "from rlc_cloud_repos import __version__; print(__version__)" 2>/dev/null)
-PACKAGE := rlc-cloud-repos
-PY_PACKAGE := rlc_cloud_repos
+VERSION := $(shell python3 -c "from rlc.cloud_repos.version import __version__; print(__version__)" 2>/dev/null)
+PACKAGE := rlc.cloud-repos
+PY_PACKAGE := rlc.cloud_repos
 distdir := dist
 
-.PHONY: install clean test lint sdist rpm spec dev mock
+.PHONY: install clean test lint dist sdist rpm spec dev mock
 
 $(distdir)/rpm/$(PACKAGE).spec:
 	@echo "📄 Generating RPM spec file..."
@@ -84,7 +84,7 @@ test:
 	@PYTHONPATH=$(PYTHONPATH) $(PYTHON) -m pytest -v tests
 
 test-coverage:
-	pytest --cov=src/rlc_cloud_repos --cov-report=term-missing
+	pytest --cov --cov-report=term-missing
 
 all: clean rpm publish clean
 

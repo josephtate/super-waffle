@@ -14,13 +14,12 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from rlc_cloud_repos.cloud_metadata import get_cloud_metadata
-from rlc_cloud_repos.dnf_vars import ensure_all_dnf_vars
-from rlc_cloud_repos.log_utils import log_and_print
-from rlc_cloud_repos.repo_config import load_mirror_map, select_mirror
+from rlc.cloud_repos.cloud_metadata import get_cloud_metadata
+from rlc.cloud_repos.dnf_vars import ensure_all_dnf_vars
+from rlc.cloud_repos.log_utils import log_and_print
+from rlc.cloud_repos.repo_config import load_mirror_map, select_mirror
 
-MIRROR_FIXTURES = Path(
-    __file__).parent.parent / "src/rlc_cloud_repos/data/ciq-mirrors.yaml"
+MIRROR_FIXTURES = Path(__file__).parent.parent / "data/ciq-mirrors.yaml"
 
 
 @pytest.mark.parametrize(
@@ -47,7 +46,7 @@ def test_cloud_metadata_and_mirror(monkeypatch, mirrors_file,
         return "fallback-id"
 
     monkeypatch.setattr(
-        "rlc_cloud_repos.cloud_metadata.subprocess.check_output",
+        "rlc.cloud_repos.cloud_metadata.subprocess.check_output",
         fake_check_output)
     # Use setattr to patch the default path constant directly
     mock_mirror_path = str(mirrors_file)
@@ -71,7 +70,7 @@ def test_dnf_vars_creation_and_backup(monkeypatch, mirrors_file, tmp_path):
     mock_mirror_path = str(mirrors_file)
 
     monkeypatch.setattr(
-        "rlc_cloud_repos.cloud_metadata.subprocess.check_output",
+        "rlc.cloud_repos.cloud_metadata.subprocess.check_output",
         lambda cmd, text=True: {
             "cloud_name": "aws",
             "region": "us-west-2"
@@ -102,7 +101,7 @@ def test_cloud_metadata_returns_dict(monkeypatch):
 
 def test_logger_fallback_and_log_and_print(monkeypatch):
     mock_logger = MagicMock()
-    monkeypatch.setattr("rlc_cloud_repos.log_utils.logger", mock_logger)
+    monkeypatch.setattr("rlc.cloud_repos.log_utils.logger", mock_logger)
     log_and_print("Test log output", level="info")
     mock_logger.info.assert_called_with("Test log output")
     log_and_print("Test log output", level="info")

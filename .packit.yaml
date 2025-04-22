@@ -9,7 +9,7 @@ actions:
     - make spec
   get-current-version:
     # This is some deep pcre voodoo to get the version from the file
-    - grep -oP '__version__\s*=\s*[\p{QMark}]\K[^\p{QMark}]+' src/rlc_cloud_repos/__init__.py
+    - grep -oP '__version__\s*=\s*[\p{QMark}]\K[^\p{QMark}]+' cloud-repos/rlc/cloud_repos/version.py
   create-archive:
     - make sdist
     - sh -c 'ls -1t dist/rlc_cloud_repos-*.tar.gz | head -n 1'

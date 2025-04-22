@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from rlc_cloud_repos.main import _configure_repos, main, parse_args
+from rlc.cloud_repos.main import _configure_repos, main, parse_args
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
@@ -12,7 +12,7 @@ FIXTURES_DIR = Path(__file__).parent / "fixtures"
 def mock_get_cloud_metadata(monkeypatch, request):
     if "test_cloud_metadata_suite" not in request.node.nodeid:
         monkeypatch.setattr(
-            "rlc_cloud_repos.main.get_cloud_metadata",
+            "rlc.cloud_repos.main.get_cloud_metadata",
             lambda: {
                 "provider": "mock",
                 "region": "mock-region"
@@ -68,7 +68,7 @@ def test_main_with_custom_mirror_file(tmp_path, dnf_vars_dir, marker,
 def test_main_handles_configuration_error(tmp_path, monkeypatch):
     """Test main handles configuration errors gracefully."""
     monkeypatch.setattr(
-        "rlc_cloud_repos.main._configure_repos",
+        "rlc.cloud_repos.main._configure_repos",
         lambda x: (_ for _ in ()).throw(Exception("Test error")),
     )
     result = main(["--force"])
