@@ -1,8 +1,9 @@
 # tests/conftest.py
+import shutil
 import sys
 from pathlib import Path
+
 import pytest
-import shutil
 
 
 @pytest.fixture
@@ -28,11 +29,10 @@ def mirrors_file(tmp_path, monkeypatch):
     mirrors_path = tmp_path / "mirrors.yaml"
 
     # Copy the content from the package data to mirrors.yaml
-    source_path = Path(__file__).parent.parent / 'data/ciq-mirrors.yaml'
+    source_path = Path(__file__).parent.parent / "data/ciq-mirrors.yaml"
     shutil.copy(source_path, mirrors_path)
 
-    monkeypatch.setattr("rlc.cloud_repos.main.DEFAULT_MIRROR_PATH",
-                        mirrors_path)
+    monkeypatch.setattr("rlc.cloud_repos.main.DEFAULT_MIRROR_PATH", mirrors_path)
     yield mirrors_path
 
 

@@ -1,11 +1,10 @@
 # src/rlc_cloud_repos/repo_config.py
-import logging
 from pathlib import Path
 from typing import Any, Dict, Tuple
 
 import yaml
 
-logger = logging.getLogger(__name__)
+from rlc.cloud_repos.log_utils import log_and_print
 
 
 def load_mirror_map(yaml_path: str) -> Dict[str, Any]:
@@ -25,19 +24,20 @@ def load_mirror_map(yaml_path: str) -> Dict[str, Any]:
     path = Path(yaml_path)
 
     if not path.exists():
-        logger.error("Mirror YAML not found at %s", yaml_path)
+        log_and_print(f"Mirror YAML not found at {yaml_path}", level="error")
         raise FileNotFoundError(f"Mirror config YAML not found at {yaml_path}")
 
     try:
         with path.open("r", encoding="utf-8") as f:
             return yaml.safe_load(f)
     except yaml.YAMLError as e:
-        logger.exception("YAML parsing error")
+        log_and_print("YAML parsing error", level="error")
         raise ValueError(f"Invalid YAML in mirror map: {e}")
 
 
-def select_mirror(metadata: Dict[str, str],
-                  mirror_map: Dict[str, Any]) -> Tuple[str, str]:
+def select_mirror(
+    metadata: Dict[str, str], mirror_map: Dict[str, Any]
+) -> Tuple[str, str]:
     """
     Chooses the best primary and backup mirror URLs for the given cloud metadata.
 
@@ -47,29 +47,36 @@ def select_mirror(metadata: Dict[str, str],
     provider = metadata["provider"].lower()
     region = metadata["region"]
 
-    logger.info("Selecting mirror for provider=%s, region=%s", provider,
-                region)
+    # Set up our fallback fallbacks
+    # We do not use default values here because we want this to fail in tests if we have a bad file. We must always have a default with primary and backup values set.
+    try:
+        default_primary = mirror_map["default"]["primary"]
+        default_backup = mirror_map["default"]["backup"]
+    except KeyError as e:
+        log_and_print(f"Missing default mirror values: {e}", level="error")
+        raise ValueError(
+            "Mirror map must have a default entry with primary and backup values set."
+        )
 
-    provider_map = mirror_map.get(provider, {})
-    if isinstance(provider_map, dict):
-        region_map = provider_map.get(region)
-        if isinstance(region_map, dict):
-            return region_map.get("primary", ""), region_map.get("backup", "")
+    log_and_print(
+        f"Selecting mirror for provider={provider}, region={region}", level="info"
+    )
 
-        default_map = provider_map.get("default")
-        if isinstance(default_map, dict):
-            return default_map.get("primary",
-                                   ""), default_map.get("backup", "")
-        elif isinstance(default_map, str):
-            return default_map, ""
+    if provider in mirror_map:
+        # The provider was located in the mirror map
+        provider_map = mirror_map[provider]
+        if region in provider_map:
+            # the region was located in the provider map
+            region_map = provider_map.get(region, {})
+        else:
+            # the region was not located in the provider map, use the default for the provider
+            region_map = provider_map.get("default", {})
+        return region_map.get("primary", default_primary), region_map.get(
+            "backup", default_backup
+        )
 
-    fallback = mirror_map.get("default")
-    if isinstance(fallback, dict):
-        return fallback.get("primary", ""), fallback.get("backup", "")
-    elif isinstance(fallback, str):
-        return fallback, ""
-
-    logger.error("No mirror found for provider=%s, region=%s", provider,
-                 region)
-    raise ValueError(
-        f"No mirror found for provider={provider}, region={region}")
+    else:
+        log_and_print(
+            f"Provider {provider} not found, using default values", level="info"
+        )
+        return default_primary, default_backup

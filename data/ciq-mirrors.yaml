@@ -95,7 +95,10 @@ aws:
   sa-east-1:
     primary: https://depot.prod.ciqws.com
     backup: https://depot.sa-east-1.prod.ciqws.com
-
+  default:
+    primary: https://depot.prod.ciqws.com
+    backup: https://depot.us-east-1.prod.ciqws.com
+    
 azure:
   eastus: &azure_eastus
     primary: https://depot.eastus.prod.azure.ciq.com

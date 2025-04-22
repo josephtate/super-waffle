@@ -14,7 +14,7 @@ spec: $(distdir)/rpm/$(PACKAGE).spec
 
 dev:
 	@echo "🔧 Installing development dependencies..."
-	pip install -e .[dev]
+	pip install -e .[dev] framework[dev]
 
 install:
 	@echo "🔧 Installing $(PACKAGE) globally..."
@@ -39,12 +39,14 @@ lint:
 clean:
 	@echo "🦚 Cleaning build artifacts..."
 	rm -f rpm/$(PACKAGE).spec rpm/*.tar.gz
-	rm -rf build dist
+	rm -rf build dist framework/build framework/dist
 	rm -rf rpm/[0-9]*.patch
 	find ./ -type d -name "*.egg-info" -exec rm -rf {} +
 	find ./ -type d -name "__pycache__" -exec rm -rf {} +
 	find . -type d -name "*.dist-info" -exec rm -rf {} +
 	find . -type d -name "*.egg-info" -exec rm -rf {} +
+	find . -type f -name "*.orig" -exec rm -f {} +
+	find . -type f -name "*.rej" -exec rm -f {} +
 	rm -rf ~/.cache/pip/wheels/*
 	rm -f .coverage
 
