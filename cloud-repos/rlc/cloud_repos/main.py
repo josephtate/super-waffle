@@ -12,11 +12,11 @@ import os
 import sys
 from datetime import datetime
 
+from rlc.cloud_repos import __version__ as rlc_version
 from rlc.cloud_repos.cloud_metadata import get_cloud_metadata
 from rlc.cloud_repos.dnf_vars import ensure_all_dnf_vars
 from rlc.cloud_repos.log_utils import log_and_print, logger, setup_logging
 from rlc.cloud_repos.repo_config import load_mirror_map, select_mirror
-from rlc.cloud_repos.version import __version__ as rlc_version
 
 MARKERFILE = "/etc/rlc-cloud-repos/.configured"
 DEFAULT_MIRROR_PATH = "/usr/share/rlc-cloud-repos/ciq-mirrors.yaml"

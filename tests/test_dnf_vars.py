@@ -1,7 +1,6 @@
 import pytest
 
-from rlc.cloud_repos.dnf_vars import (BACKUP_SUFFIX, _write_dnf_var,
-                                      ensure_all_dnf_vars)
+from rlc.cloud_repos.dnf_vars import BACKUP_SUFFIX, _write_dnf_var, ensure_all_dnf_vars
 
 
 @pytest.fixture
