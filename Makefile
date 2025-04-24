@@ -1,16 +1,21 @@
-VERSION := $(shell python3 -c "from rlc.cloud_repos.version import __version__; print(__version__)" 2>/dev/null)
+VERSION := $(shell python -c "from pkg_resources import get_distribution; print(get_distribution('rlc.cloud-repos').version)" 2>/dev/null)
+$(info "VERSION: $(VERSION)")
+GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
+
 PACKAGE := rlc.cloud-repos
 PY_PACKAGE := rlc.cloud_repos
+RPM_PACKAGE := python3-rlc-cloud-repos
 distdir := dist
 
-.PHONY: install clean test lint dist sdist rpm spec dev mock
+.PHONY: install clean test lint dist rpm spec dev mock
 
-$(distdir)/rpm/$(PACKAGE).spec:
+$(distdir)/$(RPM_PACKAGE).spec: rpm/$(RPM_PACKAGE).spec.in
 	@echo "📄 Generating RPM spec file..."
-	mkdir -p $(distdir)/rpm
-	sed -e 's/^\(Version:\s*\)VERSION/\1$(VERSION)/' rpm/$(PACKAGE).spec.in > $(distdir)/rpm/$(PACKAGE).spec
+	@echo "  Version: $(VERSION)"
+	mkdir -p $(distdir)
+	sed -e 's/^\(Version:\s*\)VERSION/\1'$(VERSION)'/' rpm/$(RPM_PACKAGE).spec.in > $(distdir)/$(RPM_PACKAGE).spec
 
-spec: $(distdir)/rpm/$(PACKAGE).spec
+spec: $(distdir)/$(RPM_PACKAGE).spec
 
 dev:
 	@echo "🔧 Installing development dependencies..."
@@ -20,15 +25,17 @@ install:
 	@echo "🔧 Installing $(PACKAGE) globally..."
 	pip install --root=/ --prefix=/usr -e .
 
-dist:
+$(distdir)/$(PY_PACKAGE)-$(VERSION)-py3-none-any.whl: setup.cfg setup.py MANIFEST.in $(shell find cloud-repos -name '*.py') config/* data/*
 	@echo "🛞 Building wheel..."
 	python3 -m build --wheel
 
-$(distdir)/$(PY_PACKAGE)-$(VERSION).tar.gz: setup.cfg setup.py $(shell find src -name '*.py')
+dist: $(distdir)/$(PY_PACKAGE)-$(VERSION)-py3-none-any.whl
+
+$(distdir)/$(PACKAGE)-$(VERSION).tar.gz: setup.cfg setup.py MANIFEST.in $(shell find cloud-repos -name '*.py') config/* data/*
 	@echo "📦 Building source distribution..."
 	python3 -m build --sdist
 
-sdist: $(distdir)/$(PY_PACKAGE)-$(VERSION).tar.gz
+sdist: $(distdir)/$(PACKAGE)-$(VERSION).tar.gz
 
 lint:
 	@echo "🔍 Running linters..."
@@ -38,7 +45,7 @@ lint:
 
 clean:
 	@echo "🦚 Cleaning build artifacts..."
-	rm -f rpm/$(PACKAGE).spec rpm/*.tar.gz
+	# rm -f rpm/$(RPM_PACKAGE).spec rpm/*.tar.gz
 	rm -rf build dist framework/build framework/dist
 	rm -rf rpm/[0-9]*.patch
 	find ./ -type d -name "*.egg-info" -exec rm -rf {} +
@@ -50,29 +57,24 @@ clean:
 	rm -rf ~/.cache/pip/wheels/*
 	rm -f .coverage
 
-rpm-tarball: spec sdist
-	# RPM expects a dash name, but python's sdist replaces - with _
-	@echo "📆 Repackaging tarball with dash-name for RPM..."
-	rm -rf build/tmp && mkdir -p build/tmp
-	tar -xzf dist/$(PY_PACKAGE)-$(VERSION).tar.gz -C build/tmp
-	mv build/tmp/$(PY_PACKAGE)-$(VERSION) build/tmp/$(PACKAGE)-$(VERSION)
-	tar -czf dist/$(PACKAGE)-$(VERSION).tar.gz -C build/tmp $(PACKAGE)-$(VERSION)
-
-rpm: rpm-tarball
+rpm: spec sdist
 	@echo "📄 Copying tarball into SOURCES for rpmbuild..."
 	mkdir -p ~/rpmbuild/SOURCES
 	cp dist/$(PACKAGE)-$(VERSION).tar.gz ~/rpmbuild/SOURCES/
 
 	@echo "🚰 Running rpmbuild..."
-	if ! rpmbuild -ba rpm/$(PACKAGE).spec; then \
+	if ! rpmbuild -ba $(distdir)/$(RPM_PACKAGE).spec; then \
 		echo "💥 RPM build failed. Ensure BuildRequires includes pyproject macros or fallback to pip install."; \
 		exit 1; \
 	fi
 
-mock: spec rpm-tarball
+mock: spec sdist
 	@echo "📦 Building SRPM..."
-	# Run packit
-	packit --debug srpm --output dist/
+	mkdir -p $(distdir)/rpm
+	cp dist/$(RPM_PACKAGE).spec $(distdir)/rpm/
+	cp dist/$(PACKAGE)-$(VERSION).tar.gz $(distdir)/rpm/
+	# Run packit with current branch
+	packit --debug srpm --output dist/ --upstream-ref $(GIT_BRANCH)
 	@echo "🧪 Running mock build..."
 	mock -r rocky-9-x86_64 --resultdir=dist --enable-network dist/*.src.rpm
 
