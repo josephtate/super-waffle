@@ -85,7 +85,7 @@ PYTHONPATH := src
 .PHONY: test
 test:
 	@echo "🧪 Running test suite with pytest..."
-	@PYTHONPATH=$(PYTHONPATH) $(PYTHON) -m pytest -v tests
+	@PYTHONPATH=$(PYTHONPATH) $(PYTHON) -m pytest -v tests --cov --cov-report=term-missing
 
 test-coverage:
 	pytest --cov --cov-report=term-missing
