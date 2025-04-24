@@ -1,0 +1,65 @@
+%global pypi_name rlc.cloud-repos
+%global rpm_name rlc-cloud-repos
+Name:           python3-%{rpm_name}
+Version:        VERSION
+Release:        1%{?dist}
+Summary:        A cloud-init querying and repository configuration tool for Rocky Linux from CIQ Products (RLC)
+
+License:        MIT
+URL:            https://ciq.com/
+Source0:        %{pypi_name}-%{version}.tar.gz
+
+BuildArch:      noarch
+BuildRequires:  python3-setuptools
+BuildRequires:  python3-devel
+BuildRequires:  python3-pip
+BuildRequires:  python3-wheel
+BuildRequires:  pyproject-rpm-macros
+
+Requires:       python3
+Requires:       python3-pyyaml
+Requires:       cloud-init
+
+%description
+Installs a utility plus cloud-init configuration to run the utility on first and every boot to check the instance metadata and update the RLC RPM repositories to point to the appropriate source.
+
+%prep
+%setup -q -n %{pypi_name}-%{version}
+
+%build
+%pyproject_wheel
+
+%install
+%pyproject_install
+rm %{buildroot}%{_prefix}/config/20_rlc-cloud-repos.cfg
+rm %{buildroot}%{_prefix}/data/ciq-mirrors.yaml
+install -Dm0644 config/20_rlc-cloud-repos.cfg %{buildroot}/etc/cloud/cloud.cfg.d/20_rlc-cloud-repos.cfg
+install -Dm0644 data/ciq-mirrors.yaml %{buildroot}/usr/share/rlc-cloud-repos/ciq-mirrors.yaml
+
+%files
+%license LICENSE
+%doc README.md
+
+# CLI entrypoint (console script)
+%{_bindir}/rlc-cloud-repos
+
+# Python package content
+%{python3_sitelib}/rlc/
+%{python3_sitelib}/rlc.cloud_repos*.dist-info
+
+# Config and static data
+%config(noreplace) /etc/cloud/cloud.cfg.d/20_rlc-cloud-repos.cfg
+/usr/share/rlc-cloud-repos/ciq-mirrors.yaml
+
+%post
+touch /etc/rlc-cloud-repos/.configured
+
+%postun
+rm -f /etc/rlc-cloud-repos/.configured
+
+%posttrans
+rm -f /etc/rlc-cloud-repos/.configured
+
+%changelog
+* Mon Mar 31 2025 Joel Hanger <jhanger@ciq.com> - 0.1.0-1
+- Initial version
