@@ -8,6 +8,7 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    container: python:3.6
     permissions:
       contents: write
     # Only run if the tag is on a commit that's part of the main branch
@@ -15,14 +16,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.6"
-
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
+          python -m pip install --upgrade pip setuptools
           make dev
 
       - name: Verify tag version matches package version
